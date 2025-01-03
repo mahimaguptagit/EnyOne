@@ -22,3 +22,7 @@ class AdminLoginView(View):
 class AdminDashboardView(View):
     def get(self,request):
         return render(request,'dashboard/index.html')
+    
+class AnalyticDashboardView(View):
+    def get(self,request):
+        return render(request,'dashboard/analytical_dashboard.html')
