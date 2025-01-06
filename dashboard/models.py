@@ -61,6 +61,19 @@ class User(AbstractBaseUser):
         return self.is_admin
 
 
+
 class Ticket(models.Model):
-    ticket=models.CharField(max_length=225 , null = True,blank=True)
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='requested_tickets')
+    ticket_title=models.CharField(max_length=225 , null = True,blank=True)
+    ticket_detail=models.CharField(max_length=225 , null = True,blank=True)
     ticket_number=models.CharField(max_length=225, null=True,blank=True)
+    ticket_status=models.CharField(max_length=50,default='Received',choices=[("Received","Received"),("In Progress","In Progress"),("Resolved","Resolved")])#in document pending status is not mention
+    assigned_request=models.ForeignKey(User,on_delete=models.CASCADE,related_name='assigned_tickets')
+    is_assign=models.BooleanField(default=False)
+    solved_date=models.DateTimeField(null=True,blank=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+
+
+    
+   
