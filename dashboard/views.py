@@ -22,7 +22,7 @@ class AdminLoginView(View):
 class AdminUpdateProfileView(View):
     def get(self,request,id):
         userdata=User.objects.get(id=id)
-        return render(request,'dashboard/admin-profile.html',{'userdetail':userdata})
+        return render(request,'dashboard/admin-profile.html',{'user':userdata})
     def post(self,request,id):
         username=request.POST.get('username')
         first_name = request.POST.get('first_name')
@@ -39,7 +39,7 @@ class AdminUpdateProfileView(View):
         if image:
             userdata.image=image
         userdata.save()
-        return redirect('AdminUpdateProfile', id=userdata.id)
+        return redirect('AdminDashboard')
 
 class AdminDashboardView(View):
     def get(self,request):
