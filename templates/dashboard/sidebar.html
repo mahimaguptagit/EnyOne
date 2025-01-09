@@ -33,7 +33,7 @@
     .notification-icon {
         position: absolute;
         top: 15px;
-        right: 150px;
+        right: 200px;
     }
     .notification-count {
         display: none;
@@ -94,7 +94,7 @@
                             </a>
                             <ul {% if active3 %} class="collapse list-unstyled show" {% else %}  class="collapse list-unstyled "  {% endif %}  id="submenuBooking">
                                 <li>
-                                    <a href="#" class="{{active310}}">
+                                    <a href="{% url 'RaiseTicketList' %}" class="{{active310}}">
                                         <i class="fas fa-table"></i>
                                         <span>Tickets</span>
                                     </a>
@@ -144,7 +144,7 @@
                                         </div>
                                         {% endif %}
                                         <div class="content">
-                                            <a class="js-acc-btn" href="#">{{request.user.first_name}}</a>
+                                            <a class="js-acc-btn" href="#">{{request.user.username}}</a>
                                         </div>
                                         <div class="account-dropdown js-dropdown">
                                             <div class="info clearfix">
@@ -165,7 +165,7 @@
                                             </div>
                                             <div class="account-dropdown__body">
                                                 <div class="account-dropdown__item">
-                                                    <a href="#">
+                                                    <a href="{% url 'AdminUpdateProfile' request.user.id %}">
                                                         <i class="zmdi zmdi-settings"></i> <b> Profile Setting </b></a>
                                                 </div>
                                             </div>
