@@ -39,7 +39,7 @@ class AdminUpdateProfileView(View):
         if image:
             userdata.image=image
         userdata.save()
-        return redirect('AdminUpdateProfile',id=userdata.id)
+        return redirect('AdminUpdateProfile', id=userdata.id)
 
 class AdminDashboardView(View):
     def get(self,request):
