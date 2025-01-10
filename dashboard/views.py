@@ -2,6 +2,8 @@ from django.shortcuts import render,redirect
 from django.views import View
 from django.contrib.auth import authenticate,login,logout
 from .models import *
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 # Create your views here.
 
@@ -18,7 +20,8 @@ class AdminLoginView(View):
             login(request,user)
             return redirect ('AdminDashboard')
         return redirect('AdminLogin')
-    
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class AdminUpdateProfileView(View):
     def get(self,request,id):
         userdata=User.objects.get(id=id)
@@ -41,6 +44,7 @@ class AdminUpdateProfileView(View):
         userdata.save()
         return redirect('AdminDashboard')
 
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class AdminDashboardView(View):
     def get(self,request):
         return render(request,'dashboard/index.html',{'active1':'active'})
@@ -48,7 +52,8 @@ class AdminDashboardView(View):
 class AnalyticDashboardView(View):
     def get(self,request):
         return render(request,'dashboard/analytical_dashboard.html')
-    
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseTicketListView(View):
     def get(self,request):
         ticketdata=Ticket.objects.all()
