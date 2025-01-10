@@ -83,13 +83,13 @@
                                     <div class="col-md-3 pr-0">
                                         <div class="welcome_card card_color1">
                                             <a href="#"> <span>Customers</span></a>
-                                            <h3>0</h3>
+                                            <h3>{{customerdatacount}}</h3>
                                         </div>
                                     </div>
                                     <div class="col-md-3 pr-0">
                                         <div class="welcome_card card_color2">
-                                            <a href="#"><span>Tickets</span></a>
-                                            <h3>0</h3>
+                                            <a href="{% url 'RaiseTicketList' %}"><span>Tickets</span></a>
+                                            <h3>{{ticketdatacount}}</h3>
                                         </div>
                                     </div>
                                 </div>

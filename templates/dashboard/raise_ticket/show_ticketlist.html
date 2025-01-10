@@ -29,20 +29,30 @@
           <div class="col-md-12">
             <div class="tablebg_clr">
               <div class="table-responsive table--no-card">
-                <table class="table table-borderless table-striped table-earning" id="mytable51">
+                <table class="table table-borderless table-striped table-earning" id="mytableticketdata">
                   <thead>
                     <tr>
                       <th>S.No</th>
-                      <th>Name</th>
-                      <th>Country Code</th>
+                      <th>User</th>
+                      <th>Ticket Type</th>
+                      <th>Ticket Number</th>
+                      <th>Ticket Status</th>
+                      <th>Statisfaction Score</th>
+                      <th>Priority Level</th>
+                      <th>Created at</th>
                     </tr>
-                  </thead>
+                  </thead> 
                   <tbody>
-                    {% for country_detail in country_detail %}
+                    {% for data in ticketdetails %}
                     <tr>
                       <td>{{forloop.counter}}</td>
-                      <td>{{country_detail.countryname}}</td>
-                      <td>{{country_detail.countrycode}}</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
                     </tr>
                     {% endfor %}
                   </tbody>
@@ -58,7 +68,7 @@
 
 <script>
   $(document).ready(function () {
-    $('#mytable51').DataTable({
+    $('#mytableticketdata').DataTable({
 
       language: {
         searchPlaceholder: "Type here..."

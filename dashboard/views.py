@@ -1,15 +1,17 @@
 from django.shortcuts import render,redirect
 from django.views import View
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import authenticate,login as dj_login,logout as dj_logout
 from .models import *
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from .utils import send_otp
+from django.contrib import messages
 
 # Create your views here.
 
 class AdminLoginView(View):
     def get(self,request):
-        return render(request,'dashboard/admin-login.html')
+        return render(request,'dashboard/Admin/admin-login.html')
     def post(self,request):
         username=request.POST.get('username')
         password=request.POST.get('password')
@@ -17,15 +19,20 @@ class AdminLoginView(View):
         if user:
             user=User.objects.get(username=username)
             print(user.username)
-            login(request,user)
+            dj_login(request,user)
             return redirect ('AdminDashboard')
         return redirect('AdminLogin')
+    
+def admin_logout(request):
+    dj_logout(request)
+    messages.success(request, 'Admin Logged Out Successfully..!!')
+    return redirect('AdminLogin')
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class AdminUpdateProfileView(View):
     def get(self,request,id):
         userdata=User.objects.get(id=id)
-        return render(request,'dashboard/admin-profile.html',{'user':userdata})
+        return render(request,'dashboard/Admin/admin-profile.html',{'user':userdata})
     def post(self,request,id):
         username=request.POST.get('username')
         first_name = request.POST.get('first_name')
@@ -45,16 +52,106 @@ class AdminUpdateProfileView(View):
         return redirect('AdminDashboard')
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
+class AdminChangePasswordView(View):
+    def get(self,request):
+        return render(request,'dashboard/Admin/admin-change-password.html')
+    def post(self,request):
+        old_password=request.POST.get('old_password')
+        password=request.POST.get('password')
+        confirm_password=request.POST.get('confirm_password')
+        print(confirm_password)
+        id=request.user.id
+        user=User.objects.get(id=id)
+        print(user)
+        if password == confirm_password:
+            if user.check_password(old_password):        
+                    user.set_password(password)
+                    user.save()    
+                    user= authenticate(request,phone_number=user.phone_number, password=password)  
+                    if user:
+                        dj_login(request,user)
+                    messages.success(request,'Password Change Successfully!!!')
+                    return redirect('AdminDashboard')
+            else:
+                messages.error(request,'Check Old Password ')
+                return redirect('AdminChangePass')
+        else:
+                messages.error(request,'New Password and Confirm Password must be same ')
+                return redirect('AdminChangePass') 
+        
+class EmailVerificationView(View):
+    def get(self, request):
+        return render(request,'dashboard/Admin/emailverification.html')
+    def post(self, request):
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email,is_admin=True)
+        except User.DoesNotExist:
+            messages.error(request, 'Admin with this email does not exist!!')
+            return redirect('AdminForgetPassword')
+        send_otp(user.email)
+        request.session['reset_email'] = email
+        messages.success(request, 'OTP sent successfully! Check your email to reset the password.')
+        return redirect('VerifyOtp')
+    
+class VerifyOtpView(View):
+    def get(self,request):
+        return render(request,'dashboard/Admin/otpverification.html')
+    def post(self, request):
+        email = request.session.get('reset_email')
+        otp = request.POST.get('otp')
+        try:
+            user = User.objects.get(email=email,is_admin=True)
+        except User.DoesNotExist:
+            messages.error(request, 'Admin with this email does not exist!!')
+            return redirect('VerifyOtp')
+        if user.otp==otp:
+            messages.success(request, 'Change Password as OTP is correct')
+            return redirect('AdminForgetPassword')
+        else :
+            messages.error(request, 'OTP Not Matched!!')
+            return redirect('VerifyOtp')
+
+class AdminForgetPasswordView(View):
+    def get(self, request):
+        return render(request,'dashboard/Admin/admin_forgetpassword.html')
+    def post(self, request):
+        email = request.session.get('reset_email')
+        newpassword = request.POST.get('newpassword')
+        confirmpassword = request.POST.get('confirmpassword')
+        try:
+            user = User.objects.get(email=email,is_admin=True)
+        except User.DoesNotExist:
+            messages.error(request, 'Admin with this phone number does not exist!!')
+            return redirect('AdminForgetPassword')
+        if newpassword != confirmpassword:
+            messages.error(request, 'New Password and Confirm Password must be the same.')
+            return redirect('AdminForgetPassword')
+
+        # Set the new password
+        user.set_password(newpassword)
+        user.save()
+        messages.success(request, 'Password changed successfully!')
+        return redirect('AdminLogin') 
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class AdminDashboardView(View):
     def get(self,request):
-        return render(request,'dashboard/index.html',{'active1':'active'})
+        ticketdata=Ticket.objects.all().count()
+        customerdata=User.objects.filter(is_admin=False,is_superuser=False).count()
+        return render(request,'dashboard/Admin/index.html',{'active1':'active','ticketdatacount':ticketdata,'customerdatacount':customerdata})
     
 class AnalyticDashboardView(View):
     def get(self,request):
         return render(request,'dashboard/analytical_dashboard.html')
+    
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
+class ManageUserView(View):
+    def get(self,request):
+        return render(request,'')
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseTicketListView(View):
     def get(self,request):
         ticketdata=Ticket.objects.all()
-        return render(request,'dashboard/raise_ticket/show_ticketlist.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'})
+        return render(request,'dashboard/raise_ticket/show_ticketlist.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 

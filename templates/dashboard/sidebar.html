@@ -66,7 +66,7 @@
             <div class="paddBottom">
                 <div class="logo">
                         <div class="image">
-                            <img src="{% static 'dashboard/images/icon/logo.png' %}" alt="John Doe" width="100"
+                            <img src="{% static 'dashboard/images/login.jpeg' %}" alt="John Doe" width="100"
                                 height="10px" />
                         </div>
                 </div>
@@ -172,13 +172,13 @@
 
                                             <div class="account-dropdown__body">
                                                 <div class="account-dropdown__item">
-                                                    <a href="#">
+                                                    <a href="{% url 'AdminChangePassword' %}">
                                                         <i class="fas fa-key"></i> <b> Change Password </b></a>
                                                 </div>
 
                                             </div>
                                             <div class="account-dropdown__footer">
-                                                <a href="#">
+                                                <a href="{% url 'AdminLogOut' %}">
                                                     <i class="zmdi zmdi-power"></i><b>Logout </b></a>
                                             </div>
                                         </div>
