@@ -1,0 +1,83 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- MAIN CONTENT-->
+
+<div class="main-content">
+  <div class="section__content section__content--p30">
+    <div class="container-fluid p-1">
+      <div id="error-container">
+        {% if messages %}
+        <div class="alert alert-danger" role="alert">
+          {% for message in messages %}
+          {{ message }}
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <div class="shadow_section">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="cards_head justify-content-between">
+              <h2 class="title-1">User List </h2>
+              <!-- <div class="adduser_btn adduser_btnnn">
+                <a href="#" class="m-0"> <i class="zmdi zmdi-plus"></i>Add Country</a>
+              </div> -->
+            </div>
+          </div>
+          <div class="col-md-12">
+            <div class="tablebg_clr">
+              <div class="table-responsive table--no-card">
+                <table class="table table-borderless table-striped table-earning" id="mytableuserdata">
+                  <thead>
+                    <tr>
+                      <th>S.No</th>
+                      <th>Username</th>
+                      <th>Email</th>
+                      <th>Phone Number</th>
+                      <th>Details</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead> 
+                  <tbody>
+                    {% for data in userdatas %}
+                    <tr>
+                      <td>{{forloop.counter}}</td>
+                      <td>{{data.username}}</td>
+                      <td>{{data.email}}</td>
+                      <td>{{data.phone_number}}</td>
+                      <td>#</td>
+                      <td>+</td>
+                      <td>-</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('#mytableuserdata').DataTable({
+
+      language: {
+        searchPlaceholder: "Type here..."
+
+      }
+    });
+  });
+  window.setTimeout(function () {
+    $(".alert").fadeTo(500, 0).slideUp(500, function () {
+      $(this).remove();
+    });
+  }, 4000);
+</script>
+{% endblock content %}

@@ -138,20 +138,26 @@ class AdminForgetPasswordView(View):
 class AdminDashboardView(View):
     def get(self,request):
         ticketdata=Ticket.objects.all().count()
-        customerdata=User.objects.filter(is_admin=False,is_superuser=False).count()
+        # customerdata=User.objects.filter(is_admin=False,is_superuser=False).count()
+        customerdata=User.objects.all().count()
         return render(request,'dashboard/Admin/index.html',{'active1':'active','ticketdatacount':ticketdata,'customerdatacount':customerdata})
-    
-class AnalyticDashboardView(View):
-    def get(self,request):
-        return render(request,'dashboard/analytical_dashboard.html')
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ManageUserView(View):
     def get(self,request):
-        return render(request,'')
+        userdata=User.objects.all()
+        return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'active2':'active'})
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseTicketListView(View):
     def get(self,request):
         ticketdata=Ticket.objects.all()
         return render(request,'dashboard/raise_ticket/show_ticketlist.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
+    
+class NotificationListsView(View):
+    def get(self,request):
+        return render(request,'dashboard/Notification/notification_list.html',{'active4':'active'})
+    
+class AnalyticDashboardView(View):
+    def get(self,request):
+        return render(request,'dashboard/analytical_dashboard.html')

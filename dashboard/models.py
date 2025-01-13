@@ -83,6 +83,16 @@ class Report(models.Model):
     report_name=models.CharField(max_length=225,null=True,blank=True)
 
 
+class Notification(models.Model):
+    sender=models.ForeignKey(User,on_delete=models.CASCADE,related_name='notification_sender')
+    receiver=models.ForeignKey(User,on_delete=models.CASCADE,related_name='notification_receiver')
+    is_delete=models.BooleanField(default=False)
+    notification_title=models.CharField(max_length=225,null=True,blank=True)
+    notification_description=models.CharField(max_length=1000,null=True,blank=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
+    reader=models.BooleanField(default=False)
+
 
     
    
