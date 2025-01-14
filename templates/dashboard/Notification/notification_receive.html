@@ -21,15 +21,15 @@
           <div class="col-md-12">
             <div class="cards_head justify-content-between">
               <h2 class="title-1">Notification List </h2>
-              <div class="adduser_btn adduser_btnnn">
-                <a href="#" class="m-0"> <i class="zmdi zmdi-plus"></i>Add Notification</a>
-              </div>
+              <!-- <div class="adduser_btn adduser_btnnn">
+                <a href="#" class="m-0"> <i class="zmdi zmdi-plus"></i>Add Country</a>
+              </div> -->
             </div>
           </div>
           <div class="col-md-12">
             <div class="tablebg_clr">
               <div class="table-responsive table--no-card">
-                <table class="table table-borderless table-striped table-earning" id="mytablenotifidata">
+                <table class="table table-borderless table-striped table-earning" id="mytablenotifireceivedata">
                   <thead>
                     <tr>
                       <th>S.No</th>
@@ -41,7 +41,7 @@
                     </tr>
                   </thead> 
                   <tbody>
-                    {% for data in notifidetails %}
+                    {% for data in notifidatas %}
                     <tr>
                       <td>{{forloop.counter}}</td>
                       <td>{{data.receiver.username}}</td>
@@ -64,7 +64,7 @@
 
 <script>
   $(document).ready(function () {
-    $('#mytablenotifidata').DataTable({
+    $('#mytablenotifireceivedata').DataTable({
 
       language: {
         searchPlaceholder: "Type here..."

@@ -14,5 +14,6 @@ urlpatterns = [
     path('manage-userslist/',views.ManageUserView.as_view(),name='ManageUserLists'),
     path('show-ticketlist/',views.RaiseTicketListView.as_view(),name='RaiseTicketList'),
     path('show-notificationlists/',views.NotificationListsView.as_view(),name='NotificationLists'),
+    path('show-receive-notification/',views.NotificationreceiveView.as_view(),name='Notificationreceive'),
     
 ]

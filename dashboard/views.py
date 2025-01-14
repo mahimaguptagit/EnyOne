@@ -156,7 +156,13 @@ class RaiseTicketListView(View):
     
 class NotificationListsView(View):
     def get(self,request):
-        return render(request,'dashboard/Notification/notification_list.html',{'active4':'active'})
+        notificationdata=Notification.objects.all()
+        return render(request,'dashboard/Notification/notification_list.html',{'active4':'active','notifidetails':notificationdata})
+    
+class NotificationreceiveView(View):
+    def get(self,request):
+        notifidata=Notification.objects.all()
+        return render(request,'dashboard/Notification/notification_receive.html',{'notifidatas':notifidata})
     
 class AnalyticDashboardView(View):
     def get(self,request):
