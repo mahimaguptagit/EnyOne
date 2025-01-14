@@ -11,7 +11,7 @@ from .powerbi_service import PowerBIService
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
-    return{str(refresh.access_token)}
+    return str(refresh.access_token)
 
 class UserLoginView(APIView):
     def post(self,request):
@@ -23,7 +23,7 @@ class UserLoginView(APIView):
         if user:
             login(request,user)
             token=get_tokens_for_user(user)
-            return Response({'status':'True','access':token,'message':'LogIn Successfully'})
+            return Response({'status':'True','access_token':token,'message':'LogIn Successfully'})
         return Response({'status':'False','message':'Check UserName or Password !!'})
     
 # class 
