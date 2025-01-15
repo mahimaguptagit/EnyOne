@@ -71,7 +71,7 @@ class Ticket(models.Model):
     priority_level=models.CharField(max_length=225,null=True,blank=True)#e.g., Low, Medium, High
     ticket_file=models.FileField(upload_to='ticket_file/',blank=True,null=True)#with optional attachments/screenshots
     submission_status=models.CharField(max_length=50,default='Received',choices=[("Received","Received"),("In Progress","In Progress"),("Resolved","Resolved")])# e.g., Received, In Progress, Resolved
-    assigned_request=models.ForeignKey(User,on_delete=models.CASCADE,related_name='assigned_tickets')#e.g., technical, feature development
+    assigned_request=models.ForeignKey(User,on_delete=models.CASCADE,related_name='assigned_tickets',null=True,blank=True)#e.g., technical, feature development
     is_assign=models.BooleanField(default=False)
     solved_date=models.DateTimeField(null=True,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)

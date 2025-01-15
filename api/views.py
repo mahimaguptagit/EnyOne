@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
 from .powerbi_service import PowerBIService
+from dashboard.models import *
 
 # Create your views here.
 
@@ -26,6 +27,25 @@ class UserLoginView(APIView):
             return Response({'status':'True','access_token':token,'message':'LogIn Successfully'})
         return Response({'status':'False','message':'Check UserName or Password !!'})
     
-# class 
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request,format=None):
+        userdata=User.objects.filter(id=request.user.id).first()
+        userdetail={
+            "username":userdata.username,
+            "first_name":userdata.first_name,
+            "last_name":userdata.last_name,
+            "email":userdata.email,
+            "image":userdata.image.url,
+            "phone_number":userdata.phone_number,}
+        return Response({'status':'True','message':'User Profile Data','user_data':userdetail})
+
+
+class UserRaiseTicket(View):
+    def post(self,request):
+       
+        pass
+
+
 
 
