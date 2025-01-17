@@ -33,26 +33,28 @@
                   <thead>
                     <tr>
                       <th>S.No</th>
-                      <th>User</th>
+                      <th>Refrence Number</th>
+                      <th>Username</th>
+                      <th>Request/Issue</th>
                       <th>Ticket Type</th>
-                      <th>Ticket Number</th>
-                      <th>Ticket Status</th>
-                      <th>Statisfaction Score</th>
-                      <th>Priority Level</th>
+                      <th>Ticket Description</th>
+                      <th>Status</th>
                       <th>Created at</th>
+                      <th>Details</th>
                     </tr>
                   </thead> 
                   <tbody>
                     {% for data in ticketdetails %}
                     <tr>
                       <td>{{forloop.counter}}</td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
+                      <td>{{data.ticket_number}}</td>
+                      <td>{{data.user.username}}</td>
+                      <td>{{data.ticket_type}}</td>
+                      <td>{{data.ticket_title}}</td>
+                      <td>{{data.ticket_description|truncatewords:3}}</td>
+                      <td>{{data.submission_status}}</td>
+                      <td>{{data.created_at}}</td>
+                      <td>Details</td>
                     </tr>
                     {% endfor %}
                   </tbody>
