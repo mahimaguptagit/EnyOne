@@ -124,6 +124,7 @@ class ShowRaisedTicketDataView(APIView):
         else:
             ticket_datas=Ticket.objects.filter(user=request.user)
         ticketdetails=[{
+            "ticket_id":ticket_data.id,
             "ticket_type":ticket_data.ticket_type,
             "ticket_title":ticket_data.ticket_title,
             "ticket_description":ticket_data.ticket_description,
@@ -148,6 +149,7 @@ class ShowParticularTicketDrtailsView(APIView):
         if ticket_id:
             ticket_data=Ticket.objects.filter(id=ticket_id,user=request.user).first()
             ticket_details={
+            "ticket_id":ticket_data.id,
             "ticket_type":ticket_data.ticket_type,
             "ticket_title":ticket_data.ticket_title,
             "ticket_description":ticket_data.ticket_description,
