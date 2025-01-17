@@ -154,6 +154,11 @@ class RaiseTicketListView(View):
         ticketdata=Ticket.objects.all()
         return render(request,'dashboard/raise_ticket/show_ticketlist.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
     
+class TicketDetailPageView(View):
+    def get(self,request,id):
+        ticket_data=Ticket.objects.get(id=id)
+        return render(request,'dashboard/raise_ticket/ticket_details.html',{'ticketdata':ticket_data,'active3':'active','active310':'active'})
+    
 class NotificationListsView(View):
     def get(self,request):
         notificationdata=Notification.objects.all()

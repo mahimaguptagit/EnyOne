@@ -140,6 +140,30 @@ class ShowRaisedTicketDataView(APIView):
         for ticket_data in ticket_datas
         ]
         return Response({'status':'true','message':'Rised Ticket Data','ticket_details':ticketdetails})
+    
+class ShowParticularTicketDrtailsView(APIView):
+    permission_classes=[IsAuthenticated]
+    def post(self,request):
+        ticket_id=request.data.get('ticket_id')
+        if ticket_id:
+            ticket_data=Ticket.objects.filter(id=ticket_id,user=request.user).first()
+            ticket_details={
+            "ticket_type":ticket_data.ticket_type,
+            "ticket_title":ticket_data.ticket_title,
+            "ticket_description":ticket_data.ticket_description,
+            "ticket_number":ticket_data.ticket_number,
+            "priority_level":ticket_data.priority_level,
+            "ticket_file":ticket_data.ticket_file.url if ticket_data.ticket_file else None,
+            "submission_status":ticket_data.submission_status,
+            "assigned_request":ticket_data.assigned_request.id if ticket_data.assigned_request else None,
+            "created_at":ticket_data.created_at,
+            "solved_date":ticket_data.solved_date,
+            "satisfaction_score":ticket_data.satisfaction_score,
+            "ticket_type":ticket_data.ticket_type, 
+            }
+            return Response({'status':'true','message':'Ticket Details !!','ticketdetail':ticket_details})
+        else:
+            return Response({'status':'false','message':'Ticket Not Found '})
 
 
     
