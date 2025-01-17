@@ -91,7 +91,7 @@ class UserRaiseTicketView(APIView):
                 # Generate ticket number
                 latest_ticket_id = Ticket.objects.latest('id').id + 1 if Ticket.objects.exists() else 1
                 timestamp_part = datetime.now().strftime('%y%m%d%H%M%S%f')[:-3]
-                ticket_number = f"ENYONE0260{latest_ticket_id}{timestamp_part}"
+                ticket_number = f"ENYONE0{latest_ticket_id}0{timestamp_part}"
 
                 # Create ticket record
                 ticket_data = Ticket.objects.create(
@@ -110,4 +110,30 @@ class UserRaiseTicketView(APIView):
                 return Response({'status': 'false', 'message': str(e)})
         
         return Response({'status': 'false', 'message': 'Invalid data', 'errors': serializer.errors})
+    
+
+class ShowRaisedTicketDataView(APIView):
+    permission_classes=[IsAuthenticated]
+    def post(self,request):
+        ticket_type=request.data.get('ticket_type')
+        ticket_datas=Ticket.objects.filter(user=request.user,ticket_type=ticket_type)
+        ticketdetails=[{
+            "ticket_type":ticket_data.ticket_type,
+            "ticket_title":ticket_data.ticket_title,
+            "ticket_description":ticket_data.ticket_description,
+            "ticket_number":ticket_data.ticket_number,
+            "priority_level":ticket_data.priority_level,
+            "ticket_file":ticket_data.ticket_file.url if ticket_data.ticket_file else None,
+            "submission_status":ticket_data.submission_status,
+            "assigned_request":ticket_data.assigned_request.id if ticket_data.assigned_request else None,
+            "created_at":ticket_data.created_at,
+            "solved_date":ticket_data.solved_date,
+            "satisfaction_score":ticket_data.satisfaction_score,
+            "ticket_type":ticket_data.ticket_type, 
+        }
+        for ticket_data in ticket_datas
+        ]
+        return Response({'status':'true','message':'Rised Ticket Data','ticket_details':ticketdetails})
+
+
     
