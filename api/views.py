@@ -87,6 +87,9 @@ class UserRaiseTicketView(APIView):
             ticket_description = data.get('ticket_description')
             ticket_file = data.get('ticket_file')
 
+            if not ticket_type and not ticket_title and not priority_level and not ticket_description:
+                return Response({'status':'false','message':'Check Required Fields !!'})
+
             try:
                 # Generate ticket number
                 latest_ticket_id = Ticket.objects.latest('id').id + 1 if Ticket.objects.exists() else 1
@@ -104,12 +107,12 @@ class UserRaiseTicketView(APIView):
                     ticket_file=ticket_file
                 )
 
-                return Response({'status': 'true', 'message': 'Ticket raised successfully'}, status=201)
+                return Response({'status': 'true', 'message': 'Ticket raised successfully'})
 
             except Exception as e:
-                return Response({'status': 'false', 'message': str(e)})
+                return Response({'status': 'false', 'message': 'Something went wrong'})
         
-        return Response({'status': 'false', 'message': 'Invalid data', 'errors': serializer.errors})
+        return Response({'status': 'false', 'message': 'Invalid data'})
     
 
 class ShowRaisedTicketDataView(APIView):
