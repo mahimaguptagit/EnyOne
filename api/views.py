@@ -119,7 +119,10 @@ class ShowRaisedTicketDataView(APIView):
     permission_classes=[IsAuthenticated]
     def post(self,request):
         ticket_type=request.data.get('ticket_type')
-        ticket_datas=Ticket.objects.filter(user=request.user,ticket_type=ticket_type)
+        if ticket_type:
+            ticket_datas=Ticket.objects.filter(user=request.user,ticket_type=ticket_type)
+        else:
+            ticketdatas=Ticket.objects.filter(user=request.user)
         ticketdetails=[{
             "ticket_type":ticket_data.ticket_type,
             "ticket_title":ticket_data.ticket_title,
