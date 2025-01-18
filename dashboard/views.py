@@ -147,6 +147,12 @@ class ManageUserView(View):
     def get(self,request):
         userdata=User.objects.all()
         return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'active2':'active'})
+    
+
+class ShowUserDetailsView(View):
+    def get(self,request,id):
+        userdata=User.objects.get(id=id)
+        return render(request,'dashboard/User/show_userdetails.html',{'user':userdata,'active2':'active'})
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseTicketListView(View):

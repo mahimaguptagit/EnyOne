@@ -12,6 +12,7 @@ urlpatterns = [
     path('admin-dashboard/',views.AdminDashboardView.as_view(),name='AdminDashboard'),
     path('analytical-dashboard/',views.AnalyticDashboardView.as_view(),name='AnalyticDashboard'),
     path('manage-userslist/',views.ManageUserView.as_view(),name='ManageUserLists'),
+    path('show-user-details/<int:id>/',views.ShowUserDetailsView.as_view(),name='ShowUserDetails'),
     path('show-ticketlist/',views.RaiseTicketListView.as_view(),name='RaiseTicketList'),
     path('show-notificationlists/',views.NotificationListsView.as_view(),name='NotificationLists'),
     path('show-receive-notification/',views.NotificationreceiveView.as_view(),name='Notificationreceive'),
