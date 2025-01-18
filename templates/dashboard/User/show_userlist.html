@@ -34,9 +34,9 @@
                     <tr>
                       <th>S.No</th>
                       <th>Username</th>
+                      <th>Details</th>
                       <th>Email</th>
                       <th>Phone Number</th>
-                      <th>Details</th>
                     </tr>
                   </thead> 
                   <tbody>
@@ -44,11 +44,12 @@
                     <tr>
                       <td>{{forloop.counter}}</td>
                       <td>{{data.username}}</td>
+                      <td><a href="{% url 'ShowUserDetails' data.id %}"><span class="role "><i
+                        class="fas fa-eye"></i></span> </a>
+                      </td>
                       <td>{{data.email}}</td>
                       <td>{{data.phone_number}}</td>
-                      <td><a href="{% url 'ShowUserDetails' data.id %}"><span class="role "><i
-                        class="fas fa-eye"></i>
-                    </span> </a></td>
+                      
                     </tr>
                     {% endfor %}
                   </tbody>
