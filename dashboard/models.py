@@ -65,7 +65,7 @@ class User(AbstractBaseUser):
 class Ticket(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='requested_tickets')
     ticket_type=models.CharField(max_length=225,null=True,blank=True,choices=[("Issue","Issue"),("Request","Request")])#issue or request for evolution
-    ticket_title=models.CharField(max_length=225 , null = True,blank=True,choices=[('Sale','Sale'),("Mobile","Mobile"),("Customer","Customer")])# sale, mobile,customer
+    ticket_title=models.CharField(max_length=225 , null = True,blank=True,choices=[('Sale','Sale'),("Product","Product"),("Customer","Customer")])# sale, mobile,customer
     ticket_description=models.CharField(max_length=225 , null = True,blank=True)
     ticket_number=models.CharField(max_length=225, null=True,blank=True)
     priority_level=models.CharField(max_length=225,null=True,blank=True,choices=[("Low","Low"),("Medium","Medium"),("High","High")])#e.g., Low, Medium, High
