@@ -5,72 +5,138 @@
 
 <div class="main-content">
     <div class="section__content section__content--p30">
-        <div class="container-fluid p-1">
-            <div id="error-container">
-                {% if messages %}
-                    <div class="alert alert-danger" role="alert">
-                        {% for message in messages %}
-                            {{ message }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
+        <div class="container-flui p-1">
             <div class="row">
                 <div class="col-lg-10">
                     <div class="user_profile">
                         <div class="card-header">
-                            <h5>Edit Profile</h5>
+                            <h5><a href="{% url 'RaiseTicketList' %}"><i class="fa fa-caret-left"></i></a>Ticket Details</h5>
                         </div>
                         <div class="card-body">
                             <form action="" method="post" class="" enctype="multipart/form-data">
                                 {% csrf_token %}
-                                <input type="hidden" name="user_id" value="{{ user.id }}">
-                                <div class="bottom_border">
-                                    <div class="row align-items-center">
-                                        <div class="col-lg-6">
-                                            <label for="username">User Name : </label>
-                                            <input type="text" id="username" name="username" placeholder="Enter Username"
-                                                class="form-control" required value="{{ user.username }}" >
+                                <div class="bottom_border bottom_border1">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <label for="user">Username </label>
                                         </div>
-                                        <div class="col-lg-6">
-                                            <label for="email">Email : </label>
-                                            <input type="email" id="email" name="email" placeholder="Enter Email" class="form-control"  value="{{ user.email }}"  pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" required>
+                                        <div class="col-lg-9">
+                                            <input type="text" value="{{ data.user.username }}" name="user"
+                                                id="user" readonly>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="bottom_border">
-                                    <div class="row align-items-center">
-                                        <div class="col-lg-6">
-                                            <label for="first_name">First Name : </label>
-                                            <input type="text" id="first_name" name="first_name" placeholder="Enter First Name"
-                                                class="form-control" required value="{{ user.first_name }}" >
+                                <div class="bottom_border bottom_border1">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <label for="ticket_number">Refrence Number </label>
                                         </div>
-                                        <div class="col-lg-6">
-                                            <label for="last_name">Last Name : </label>
-                                            <input type="text" id="last_name" name="last_name" placeholder="Enter Last Name"
-                                                class="form-control" required value="{{ user.last_name }}" >
+                                        <div class="col-lg-9">
+                                            <input type="text" value="{{ data.ticket_number }}" name="ticket_number"
+                                                id="ticket_number" readonly>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="bottom_border">
-                                    <div class="row align-items-center">
-                                        <div class="col-lg-6">
-                                            <label for="phone_number">Phone Number : </label>
-                                            <input type="text" id="phone_number" name="phone_number" placeholder="Enter Phone Number" class="form-control" pattern="^\+?[0-9]*$" required value="{{ user.phone_number }}">
+                                <div class="bottom_border bottom_border1">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <label for="ticket_type">Issue/Request </label>
                                         </div>
-                                        <div class="col-lg-6">
-                                            <label>Update Image :</label>
+                                        <div class="col-lg-9">
+                                            <input type="text" value="{{ data.ticket_type }}" name="ticket_type"
+                                                id="ticket_type" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bottom_border bottom_border1">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <label for="ticket_title">Ticket Type </label>
+                                        </div>
+                                        <div class="col-lg-9">
+                                            <input type="text" value="{{ data.ticket_title }}" name="ticket_title"
+                                                id="ticket_title" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bottom_border bottom_border1">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <label for="ticket_description">Ticket Description</label>
+                                        </div>
+                                        <div class="col-lg-9">
+                                            <input type="text" value="{{ data.ticket_description }}" name="ticket_description"
+                                                id="ticket_description" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bottom_border bottom_border1">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <label for="priority_level">Priority Level </label>
+                                        </div>
+                                        <div class="col-lg-9">
+                                            <input type="text" value="{{ data.priority_level }}" name="priority_level"
+                                                id="priority_level" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bottom_border bottom_border1">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <label for="assigned_request">Assigned Username </label>
+                                        </div>
+                                        {% if data.is_assign %}
+                                        <div class="col-lg-9">
+                                            <input type="text" value="{{ data.assigned_request.username }}"
+                                                name="assigned_request" id="assigned_request"  readonly>
+                                        </div>
+                                        {% else %}
+                                        <div class="col-lg-9">
+                                            <input type="text" value="None"
+                                                    name="assigned_request" id="assigned_request"  readonly>
+                                        </div>
+                                        
+                                        {% endif %}
+                                        
+                                    </div>
+                                </div>
+                                <div class="bottom_border bottom_border1">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <label for="submission_status">Ticket Status : </label>
+                                        </div>
+                                        <div class="col-lg-9">
+                                            <input type="text" value="{{ data.submission_status }}" name="submission_status" id="submission_status" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                 
+                                <div class="bottom_border bottom_border1">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <label for="created_at">Created At : </label>
+                                        </div>
+                                        <div class="col-lg-9">
+                                            <input type="text" value="{{ data.created_at }}" name="created_at" id="created_at" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bottom_border bottom_border1">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <label>Optional File :</label>
+                                        </div>
+                                        <div class="col-lg-9">
                                             <label for="image" class="imageee">
                                                 <div class="profile-image" id="front_images3">
-                                                {% if user.image %}
-                                                   <img src="{{ user.image.url }}" alt="User Image" style="height: 100%;" id="front_image3">
+                                                {% if data.ticket_file %}
+                                                   <img src="{{ data.ticket_file.url }}" alt="Optional File" style="height: 100%;" id="front_image3">
                                                 {% else %}
-                                                    <img src="{{ default.png.url }}" alt="User Image" id="front_image3">
+                                                    <img src="{{ default.png.url }}" alt="Optional File" id="front_image3">
                                                 {% endif %}
                                                 </div>
                                             </label>
-                                            <input type="file" id="image" name="image" class="form-control-file "
-                                                accept="image/*" onchange="front_show(event, 'front_image3', 'front_images3')" >
                                         </div>
                                     </div>
                                 </div>
@@ -83,18 +149,4 @@
     </div>
 </div>
 
-<script>
-    // Disable the validation of the jQuery Validate library.
-    $(document).ready(function () {
-        $.validator.setDefaults({
-            ignore: []
-        });
-    });
-    window.setTimeout(function() {
-        $(".alert").fadeTo(500, 0).slideUp(500, function(){
-            $(this).remove();
-        });
-    }, 4000);
-    
-</script>
 {% endblock content %}

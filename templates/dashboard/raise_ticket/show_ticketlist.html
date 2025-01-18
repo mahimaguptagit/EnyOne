@@ -54,7 +54,9 @@
                       <td>{{data.ticket_description|truncatewords:3}}</td>
                       <td>{{data.submission_status}}</td>
                       <td>{{data.created_at}}</td>
-                      <td>Details</td>
+                      <td><a href="{% url 'TicketDetailPage' data.id %}"><span class="role "><i
+                        class="fas fa-eye"></i>
+                    </span> </a></td>
                     </tr>
                     {% endfor %}
                   </tbody>
