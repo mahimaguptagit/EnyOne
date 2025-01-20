@@ -165,6 +165,11 @@ class TicketDetailPageView(View):
         ticket_data=Ticket.objects.get(id=id)
         return render(request,'dashboard/raise_ticket/ticket_details.html',{'data':ticket_data,'active3':'active','active310':'active'})
     
+class TicketParticularDeleteView(View):
+    def get(self,request,id):
+        ticket_data=Ticket.objects.get(id=id).delete()
+        return redirect('RaiseTicketList')
+    
 class NotificationListsView(View):
     def get(self,request):
         notificationdata=Notification.objects.all()
