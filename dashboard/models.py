@@ -4,13 +4,12 @@ from django.contrib.auth.models import AbstractBaseUser,BaseUserManager
 # Create your models here.
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self,first_name,last_name,email,phone_number,address,image,username,password):
+    def create_user(self,first_name,last_name,email,phone_number,image,username,password):
         user = self.model(
             first_name=first_name,
             last_name=last_name,
             email=email,
             phone_number=phone_number,
-            address=address,
             username=username,
             image=image,
         )

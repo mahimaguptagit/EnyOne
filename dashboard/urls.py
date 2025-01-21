@@ -13,6 +13,7 @@ urlpatterns = [
     path('analytical-dashboard/',views.AnalyticDashboardView.as_view(),name='AnalyticDashboard'),
     path('manage-userslist/',views.ManageUserView.as_view(),name='ManageUserLists'),
     path('show-user-details/<int:id>/',views.ShowUserDetailsView.as_view(),name='ShowUserDetails'),
+    path('add-userdata/',views.AddUserView.as_view(),name='AddUser'),
     path('show-ticketlist/',views.RaiseTicketListView.as_view(),name='RaiseTicketList'),
     path('ticket-details/<int:id>/',views.TicketDetailPageView.as_view(),name='TicketDetailPage'),
     path('ticket-particular-delete/<int:id>/',views.TicketParticularDeleteView.as_view(),name='TicketParticularDelete'),

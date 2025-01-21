@@ -153,6 +153,23 @@ class ShowUserDetailsView(View):
     def get(self,request,id):
         userdata=User.objects.get(id=id)
         return render(request,'dashboard/User/show_userdetails.html',{'user':userdata,'active2':'active'})
+    
+class AddUserView(View):
+    def get(self,request):
+        return render(request,'dashboard/User/add_userdata.html')
+    def post(self,request):
+        username=request.POST.get('username')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        image = request.FILES.get('image')
+        phone_number = request.POST.get('phone_number')
+        password = request.POST.get('password')
+        userdata=User.objects.create_user(username=username,first_name=first_name,last_name=last_name,email=email,image=image,phone_number=phone_number,password=password)
+        userdata.image=image
+        userdata.save()
+        messages.success('User Created Successfully !!')
+        return redirect('ManageUserLists')
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseTicketListView(View):
@@ -164,6 +181,10 @@ class TicketDetailPageView(View):
     def get(self,request,id):
         ticket_data=Ticket.objects.get(id=id)
         return render(request,'dashboard/raise_ticket/ticket_details.html',{'data':ticket_data,'active3':'active','active310':'active'})
+    
+class TicketUpdateDetailsView(View):
+    def get(self,request,id):
+        return render(request,'')
     
 class TicketParticularDeleteView(View):
     def get(self,request,id):
