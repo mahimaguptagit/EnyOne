@@ -125,9 +125,9 @@ class ShowRaisedTicketDataView(APIView):
     def post(self,request):
         ticket_type=request.data.get('ticket_type')
         if ticket_type:
-            ticket_datas=Ticket.objects.filter(user=request.user,ticket_type=ticket_type)
+            ticket_datas=Ticket.objects.filter(user=request.user,ticket_type=ticket_type).order_by('-id')
         else:
-            ticket_datas=Ticket.objects.filter(user=request.user)
+            ticket_datas=Ticket.objects.filter(user=request.user).order_by('-id')
         ticketdetails=[{
             "ticket_id":ticket_data.id,
             "ticket_type":ticket_data.ticket_type,

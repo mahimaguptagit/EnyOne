@@ -145,7 +145,7 @@ class AdminDashboardView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ManageUserView(View):
     def get(self,request):
-        userdata=User.objects.filter(is_superuser=False)
+        userdata=User.objects.filter(is_superuser=False).order_by('-id')
         return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'active2':'active'})
     
 
@@ -174,7 +174,7 @@ class AddUserView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseTicketListView(View):
     def get(self,request):
-        ticketdata=Ticket.objects.all()
+        ticketdata=Ticket.objects.all().order_by('-id')
         return render(request,'dashboard/raise_ticket/show_ticketlist.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
     
 class TicketDetailPageView(View):
