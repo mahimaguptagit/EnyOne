@@ -107,9 +107,9 @@ class ShowRaisedTicketDataView(APIView):
             "submission_status":ticket_data.submission_status,
             "assigned_request":ticket_data.assigned_request.id if ticket_data.assigned_request else 0,
             "assigned_username":ticket_data.assigned_request.username if ticket_data.assigned_request else None,
-            "assigned_user_image":ticket_data.assigned_request.image.url if  ticket_data.assigned_request.image  else None,
-            "created_at":ticket_data.created_at,
-            "solved_date":ticket_data.solved_date,
+            "assigned_user_image":ticket_data.assigned_request.image.url if ticket_data.assigned_request and ticket_data.assigned_request.image  else None,
+            "created_at": ticket_data.created_at.strftime('%Y-%m-%d %H:%M:%S') if ticket_data.created_at else None,
+            "solved_date": ticket_data.solved_date.strftime('%Y-%m-%d %H:%M:%S') if ticket_data.solved_date else None,
             "ticket_type":ticket_data.ticket_type, 
             "is_feedback":ticket_data.is_feedback,
         }
