@@ -198,7 +198,7 @@ class TicketUpdateDetailsView(View):
         ticket_data.submission_status=submission_status
         ticket_data.save()
         messages.success(request,'Ticket Data Updated')
-        return redirect('TicketUpdateDetails',id=id)
+        return redirect('RaiseTicketList')
     
 class TicketParticularDeleteView(View):
     def get(self,request,id):
