@@ -107,6 +107,7 @@ class ShowRaisedTicketDataView(APIView):
             "submission_status":ticket_data.submission_status,
             "assigned_request":ticket_data.assigned_request.id if ticket_data.assigned_request else 0,
             "assigned_username":ticket_data.assigned_request.username if ticket_data.assigned_request else None,
+            "assigned_user_image":ticket_data.assigned_request.image.url if ticket_data.assigned_request and ticket_data.assigned_request.image  else None,
             "created_at":ticket_data.created_at,
             "solved_date":ticket_data.solved_date,
             "satisfaction_score":ticket_data.satisfaction_score,
@@ -133,6 +134,7 @@ class ShowParticularTicketDrtailsView(APIView):
             "submission_status":ticket_data.submission_status,
             "assigned_request":ticket_data.assigned_request.id if ticket_data.assigned_request else 0,
             "assigned_username":ticket_data.assigned_request.username if ticket_data.assigned_request else None,
+            "assigned_user_image":ticket_data.assigned_request.image.url if ticket_data.assigned_request and ticket_data.assigned_request.image  else None,
             "created_at":ticket_data.created_at,
             "solved_date":ticket_data.solved_date,
             "satisfaction_score":ticket_data.satisfaction_score,
@@ -150,7 +152,7 @@ class AddSatisfactionScoreView(APIView):
         if not ticket_id and not satisfaction_score:
             return Response({'status':'false','message':'Please add required fields'})
         try:
-            ticket_data=Ticket.objects.filter(id=ticket_id,user=request.user).first()
+            ticket_data=Ticket.objects.filter(id=ticket_id,user=request.user,submission_status="Resolved").first()
             ticket_data.satisfaction_score=satisfaction_score
             ticket_data.save()
             return Response({'status':'true','message':'Satisfaction Score Updated Successfully'})
