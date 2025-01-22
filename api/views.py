@@ -178,7 +178,7 @@ class ShowTicketFeedbackView(APIView):
         feedback_data=TicketFeedback.objects.filter(user=request.user,ticket_id=ticket_data).first()
         feedbackdata={
             'user':feedback_data.user.username,
-            'ticket_id':feedback_data.ticket_id,
+            'ticket_id':feedback_data.ticket_id.id,
             'satisfaction_score':feedback_data.satisfaction_score,
             'feedback_desciption':feedback_data.feedback_desciption
         }
