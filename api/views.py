@@ -36,18 +36,18 @@ class UserLoginView(APIView):
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request,format=None):
-        try:
-            userdata=User.objects.filter(id=request.user.id).first()
-            userdetail={
+        userdata=User.objects.filter(id=request.user.id).first()
+        if not userdata:
+            return Response({'status':'false','message':'User data not found !!'})
+        userdetail={
                 "username":userdata.username,
                 "first_name":userdata.first_name,
                 "last_name":userdata.last_name,
                 "email":userdata.email,
                 "image":userdata.image.url,
                 "phone_number":userdata.phone_number,}
-            return Response({'status':'true','message':'User Profile Data','user_data':userdetail})
-        except User.DoesNotExist:
-            return Response({'status':'false','message':'User data not found !!'})
+        return Response({'status':'true','message':'User Profile Data','user_data':userdetail})
+            
     
 class UserRaiseTicketView(APIView):
     permission_classes = [IsAuthenticated]
@@ -123,6 +123,8 @@ class ShowParticularTicketDrtailsView(APIView):
         ticket_id=request.data.get('ticket_id')
         if ticket_id:
             ticket_data=Ticket.objects.filter(id=ticket_id,user=request.user).first()
+            if not ticket_data:
+                return Response({'status': 'false', 'message': 'Ticket not found'})
             ticket_details={
             "ticket_id":ticket_data.id,
             "ticket_type":ticket_data.ticket_type,
@@ -142,7 +144,7 @@ class ShowParticularTicketDrtailsView(APIView):
             }
             return Response({'status':'true','message':'Ticket Details !!','ticketdetail':ticket_details})
         else:
-            return Response({'status':'false','message':'Ticket Not Found '})
+            return Response({'status':'false','message':'Ticket ID Not Found '})
         
 class AddSatisfactionScoreView(APIView):
     permission_classes = [IsAuthenticated]
@@ -152,13 +154,12 @@ class AddSatisfactionScoreView(APIView):
         score=int(satisfaction_score)
         if not ticket_id or not satisfaction_score:
             return Response({'status':'false','message':'Please add required fields'})
-        try:
-            ticket_data=Ticket.objects.filter(id=ticket_id,user=request.user,submission_status="Resolved").first()
-            ticket_data.satisfaction_score=score
-            ticket_data.save()
-            return Response({'status':'true','message':'Satisfaction Score Updated Successfully'})
-        except Ticket.DoesNotExist :
-            return Response({'status':'false','message':'Ticket Not Found'})
-
+        ticket_data=Ticket.objects.filter(id=ticket_id,user=request.user,submission_status="Resolved").first()
+        if not ticket_data:
+            return Response({'status': 'false', 'message': 'Ticket not found or not resolved'})
+        ticket_data.satisfaction_score=score
+        ticket_data.save()
+        return Response({'status':'true','message':'Satisfaction Score Updated Successfully'})
+        
 
     
