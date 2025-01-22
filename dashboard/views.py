@@ -139,13 +139,13 @@ class AdminDashboardView(View):
     def get(self,request):
         ticketdata=Ticket.objects.all().count()
         # customerdata=User.objects.filter(is_admin=False,is_superuser=False).count()
-        customerdata=User.objects.all().count()
+        customerdata=User.objects.filter(is_superuser=False).count()
         return render(request,'dashboard/Admin/index.html',{'active1':'active','ticketdatacount':ticketdata,'customerdatacount':customerdata})
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ManageUserView(View):
     def get(self,request):
-        userdata=User.objects.all()
+        userdata=User.objects.filter(is_superuser=False)
         return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'active2':'active'})
     
 

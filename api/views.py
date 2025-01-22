@@ -24,9 +24,13 @@ class UserLoginView(APIView):
             return Response({'status':'false','message':'Both username and password are required.'})
         user = authenticate(request=request,username=username,password=password)
         if user:
-            login(request,user)
-            token=get_tokens_for_user(user)
-            return Response({'status':'true','access_token':token,'message':'LogIn Successfully'})
+            userdata=User.objects.filter(is_superuser=False,id=user.id).first()
+            if userdata:
+                login(request,user)
+                token=get_tokens_for_user(user)
+                return Response({'status':'true','access_token':token,'message':'LogIn Successfully'})
+            else:
+                return Response({'status':'false','message':'Please Check User Details !!'})
         return Response({'status':'false','message':'Check UserName or Password !!'})
     
 class UserProfileView(APIView):
@@ -74,6 +78,7 @@ class UserRaiseTicketView(APIView):
     def post(self, request, format=None):
         # Get the logged-in user
         user = request.user
+        userdata=User.objects.filter(is_superuser=False,id=user.id).first()
 
         # Deserialize and validate the request data
         serializer = TicketSerializer(data=request.data)
@@ -98,7 +103,7 @@ class UserRaiseTicketView(APIView):
 
                 # Create ticket record
                 ticket_data = Ticket.objects.create(
-                    user=user,
+                    user=userdata,
                     ticket_type=ticket_type,
                     ticket_title=ticket_title,
                     ticket_description=ticket_description,

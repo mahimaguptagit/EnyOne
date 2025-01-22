@@ -92,6 +92,11 @@ class Notification(models.Model):
     updated_at=models.DateTimeField(auto_now=True)
     reader=models.BooleanField(default=False)
 
+# check the model already build in pasco
+class ChatTicketDetails(models.Model):
+    ticket_number=models.ForeignKey(Ticket,on_delete=models.CASCADE,null=True,blank=True)
+    chat=models.CharField(max_length=1000,null=True,blank=True)
+
 
     
    
