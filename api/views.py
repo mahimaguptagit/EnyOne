@@ -149,11 +149,12 @@ class AddSatisfactionScoreView(APIView):
     def post(self,request):
         ticket_id=request.data.get('ticket_id')
         satisfaction_score=request.data.get('satisfaction_score')
+        score=int(satisfaction_score)
         if not ticket_id and not satisfaction_score:
             return Response({'status':'false','message':'Please add required fields'})
         try:
             ticket_data=Ticket.objects.filter(id=ticket_id,user=request.user,submission_status="Resolved").first()
-            ticket_data.satisfaction_score=satisfaction_score
+            ticket_data.satisfaction_score=score
             ticket_data.save()
             return Response({'status':'true','message':'Satisfaction Score Updated Successfully'})
         except Ticket.DoesNotExist :
