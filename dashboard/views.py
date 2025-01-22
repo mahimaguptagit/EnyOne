@@ -5,6 +5,7 @@ from .models import *
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from .utils import send_otp
+from django.utils import timezone
 from django.contrib import messages
 
 # Create your views here.
@@ -192,9 +193,12 @@ class TicketUpdateDetailsView(View):
         submission_status=request.POST.get('submission_status')
         ticket_data=Ticket.objects.get(id=id)
         userdata=User.objects.filter(id=assigned_data,is_admin=True).first()
+        currentdatetime=timezone.now()
         if assigned_data:
             ticket_data.assigned_request=userdata
             ticket_data.is_assign=True
+        if submission_status == 'Resolved':
+            ticket_data.solved_date=currentdatetime
         ticket_data.submission_status=submission_status
         ticket_data.save()
         messages.success(request,'Ticket Data Updated')
