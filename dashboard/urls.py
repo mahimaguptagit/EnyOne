@@ -16,6 +16,7 @@ urlpatterns = [
     path('add-userdata/',views.AddUserView.as_view(),name='AddUser'),
     path('show-ticketlist/',views.RaiseTicketListView.as_view(),name='RaiseTicketList'),
     path('ticket-details/<int:id>/',views.TicketDetailPageView.as_view(),name='TicketDetailPage'),
+    path('ticket-update-detail/<int:id>/',views.TicketUpdateDetailsView.as_view(),name='TicketUpdateDetails'),
     path('ticket-particular-delete/<int:id>/',views.TicketParticularDeleteView.as_view(),name='TicketParticularDelete'),
     path('show-notificationlists/',views.NotificationListsView.as_view(),name='NotificationLists'),
     path('show-receive-notification/',views.NotificationreceiveView.as_view(),name='Notificationreceive'),

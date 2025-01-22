@@ -21,7 +21,7 @@
                                             <label for="user">Username </label>
                                         </div>
                                         <div class="col-lg-9">
-                                            <input type="text" value="{{ data.user.username }}" name="user" id="user" required>
+                                            <input type="text" value="{{ data.user.username }}" name="user" id="user" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -80,7 +80,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="bottom_border bottom_border1">
+                                <!-- <div class="bottom_border bottom_border1">
                                     <div class="row">
                                         <div class="col-lg-3">
                                             <label for="assigned_request">Assigned Username </label>
@@ -99,8 +99,8 @@
                                         {% endif %}
                                         
                                     </div>
-                                </div>
-                                <div class="bottom_border bottom_border1">
+                                </div> -->
+                                <!-- <div class="bottom_border bottom_border1">
                                     <div class="row">
                                         <div class="col-lg-3">
                                             <label for="submission_status">Ticket Status : </label>
@@ -109,7 +109,7 @@
                                             <input type="text" value="{{ data.submission_status }}" name="submission_status" id="submission_status" readonly>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                                  
                                 <div class="bottom_border bottom_border1">
                                     <div class="row">
@@ -139,26 +139,48 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="bottom_border">
+                                <div class="bottom_border bottom_border1">
                                     <div class="row">
                                         <div class="col-lg-3">
-                                            <label for="customer_status">Customer Status : </label>
+                                            <label for="customer_status">Assigned User : </label>
+                                        </div>
+                                        {% if data.is_assign %}
+                                        <div class="col-lg-9">
+                                                <input type="text" value="{{ data.assigned_request.username }}"
+                                                    name="assigned_request" id="assigned_request"  readonly>
+                                        </div>
+                                        {% else %}
+                                        <div class="col-lg-9">
+                                            <select name="assigned_data" id="selectLg"
+                                                class="form-control large-input large-input" required>
+                                                <option value="" disabled selected>Assign User</option>
+                                                {% for admin in admindata %}
+                                                <option value="{{admin.id}}" > {{admin.username }} </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="bottom_border bottom_border1">
+                                    <div class="row">
+                                        <div class="col-lg-3">
+                                            <label for="submission_status">Ticket Status : </label>
                                         </div>
                                         <div class="col-lg-9">
-                                            <select name="customer_status" id="selectLg"
-                                                class="form-control large-input large-input" required>
-                                                <option disabled>Select Customer Status</option>
-                                                <option value="Confirmed" {% if booking_det.customer_status == "Confirmed" %} selected {% endif %}> Confirmed </option>
-                                                <option value="Pending" {% if booking_det.customer_status == "Pending" %} selected {% endif %}>
-                                                    Pending
-                                                </option>
-                                                <option value="Cancelled" {% if booking_det.customer_status == "Cancelled" %} selected {% endif %}>
-                                                    Cancelled
-                                                </option>
-                                                <option value="Completed" {% if booking_det.customer_status == "Completed" %} selected {% endif %}> Completed </option>
+                                            <select name="submission_status" id="selectLg"
+                                            class="form-control large-input large-input" required>
+                                            <option disabled>Select Status</option>
+                                            <option value="Received" {% if data.submission_status == "Received" %} selected {% endif %}> Received </option>
+                                            <option value="In Progress" {% if data.submission_status == "In Progress" %} selected {% endif %}>In Progress </option>
+                                            <option value="Resolved" {% if data.submission_status == "Resolved" %} selected {% endif %}>
+                                                Resolved </option>
                                             </select>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="Submit" class="btn submit_btn">Edit</button>
                                 </div>
                             </form>
                         </div>

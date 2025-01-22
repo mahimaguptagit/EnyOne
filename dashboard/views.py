@@ -184,7 +184,21 @@ class TicketDetailPageView(View):
     
 class TicketUpdateDetailsView(View):
     def get(self,request,id):
-        return render(request,'')
+        ticket_data=Ticket.objects.get(id=id)
+        admindatas=User.objects.filter(is_admin=True)
+        return render(request,'dashboard/raise_ticket/ticketupdate_details.html',{'data':ticket_data,'active3':'active','active310':'active','admindata':admindatas})
+    def post(self,request,id):
+        assigned_data=request.POST.get('assigned_data')
+        submission_status=request.POST.get('submission_status')
+        ticket_data=Ticket.objects.get(id=id)
+        userdata=User.objects.filter(id=assigned_data,is_admin=True).first()
+        if assigned_data:
+            ticket_data.assigned_request=userdata
+            ticket_data.is_assign=True
+        ticket_data.submission_status=submission_status
+        ticket_data.save()
+        messages.success(request,'Ticket Data Updated')
+        return redirect('TicketUpdateDetails',id=id)
     
 class TicketParticularDeleteView(View):
     def get(self,request,id):
