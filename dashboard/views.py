@@ -168,7 +168,7 @@ class AddUserView(View):
         userdata=User.objects.create_user(username=username,first_name=first_name,last_name=last_name,email=email,image=image,phone_number=phone_number,password=password)
         userdata.image=image
         userdata.save()
-        messages.success('User Created Successfully !!')
+        messages.success(request,'User Created Successfully !!')
         return redirect('ManageUserLists')
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
