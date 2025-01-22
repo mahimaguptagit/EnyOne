@@ -110,7 +110,6 @@ class ShowRaisedTicketDataView(APIView):
             "assigned_user_image":ticket_data.assigned_request.image.url if  ticket_data.assigned_request.image  else None,
             "created_at":ticket_data.created_at,
             "solved_date":ticket_data.solved_date,
-            "satisfaction_score":ticket_data.satisfaction_score,
             "ticket_type":ticket_data.ticket_type, 
         }
         for ticket_data in ticket_datas
@@ -139,7 +138,6 @@ class ShowParticularTicketDrtailsView(APIView):
             "assigned_user_image":ticket_data.assigned_request.image.url if ticket_data.assigned_request.image  else None,
             "created_at":ticket_data.created_at,
             "solved_date":ticket_data.solved_date,
-            "satisfaction_score":ticket_data.satisfaction_score,
             "ticket_type":ticket_data.ticket_type, 
             }
             return Response({'status':'true','message':'Ticket Details !!','ticketdetail':ticket_details})
@@ -151,15 +149,41 @@ class AddSatisfactionScoreView(APIView):
     def post(self,request):
         ticket_id=request.data.get('ticket_id')
         satisfaction_score=request.data.get('satisfaction_score')
+        feedback_desciption=request.data.get('feedback_desciption')
+        
         score=int(satisfaction_score)
         if not ticket_id or not satisfaction_score:
             return Response({'status':'false','message':'Please add required fields'})
         ticket_data=Ticket.objects.filter(id=ticket_id,user=request.user,submission_status="Resolved").first()
         if not ticket_data:
             return Response({'status': 'false', 'message': 'Ticket not found or not resolved'})
-        ticket_data.satisfaction_score=score
+        if ticket_data.is_feedback == True:
+            return Response({'status':'false','message':'Feedback already given for the given ticket'})
+        TicketFeedback.objects.create(user=request.user,ticket_id=ticket_data,satisfaction_score=score,feedback_desciption=feedback_desciption)
+        ticket_data.is_feedback=True
         ticket_data.save()
         return Response({'status':'true','message':'Satisfaction Score Updated Successfully'})
+    
+class ShowTicketFeedbackView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self,request):
+        ticket_id=request.data.get('ticket_id')
+        if not ticket_id :
+            return Response({'status':'false','message':'Please add ticket id'})
+        ticket_data=Ticket.objects.filter(id=ticket_id,user=request.user,submission_status="Resolved").first()
+        if not ticket_data:
+            return Response({'status': 'false', 'message': 'Ticket not found or not resolved'})
+        if ticket_data.is_feedback == False:
+            return Response({'status':'false','message':'Feedback Not Given Yet !!'})
+        feedback_data=TicketFeedback.objects.filter(user=request.user,ticket_id=ticket_data).first()
+        feedbackdata={
+            'user':feedback_data.user.username,
+            'ticket_id':feedback_data.ticket_id,
+            'satisfaction_score':feedback_data.satisfaction_score,
+            'feedback_desciption':feedback_data.feedback_desciption
+        }
+        return Response({'status':'true','message':'Feedback Data For Given Ticket ID','feedback_details':feedbackdata})
+
         
 
     

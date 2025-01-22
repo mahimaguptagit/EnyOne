@@ -7,6 +7,7 @@ urlpatterns = [
     path('user-add-raise-ticket/',views.UserRaiseTicketView.as_view(),name='UserRaiseTicket'),
     path('show-raised-ticket/',views.ShowRaisedTicketDataView.as_view(),name='ShowRaisedTicketData'),
     path('show-particular-ticket-data/',views.ShowParticularTicketDrtailsView.as_view(),name='ShowParticularTicketDrtails'),
-    path('add-satisfaction-score/',views.AddSatisfactionScoreView.as_view(),name='AddSatisfactionScore')
+    path('add-satisfaction-score/',views.AddSatisfactionScoreView.as_view(),name='AddSatisfactionScore'),
+    path('feedback-details/',views.ShowTicketFeedbackView.as_view(),name='ShowTicketFeedback')
     
 ]

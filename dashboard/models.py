@@ -72,10 +72,17 @@ class Ticket(models.Model):
     submission_status=models.CharField(max_length=50,default='Received',choices=[("Received","Received"),("In Progress","In Progress"),("Resolved","Resolved")])# e.g., Received, In Progress, Resolved
     assigned_request=models.ForeignKey(User,on_delete=models.CASCADE,related_name='assigned_tickets',null=True,blank=True)#e.g., technical, feature development
     is_assign=models.BooleanField(default=False)
+    is_feedback=models.BooleanField(default=False)
     solved_date=models.DateTimeField(null=True,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
+
+class TicketFeedback(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    ticket_id=models.ForeignKey(Ticket,on_delete=models.CASCADE)
     satisfaction_score=models.PositiveIntegerField(null=True,blank=True) 
+    feedback_desciption=models.CharField(max_length=225,null=True,blank=True)
+
 
 class Report(models.Model):
     report_id=models.IntegerField(null=True,blank=True)
