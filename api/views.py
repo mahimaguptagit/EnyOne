@@ -111,6 +111,7 @@ class ShowRaisedTicketDataView(APIView):
             "created_at":ticket_data.created_at,
             "solved_date":ticket_data.solved_date,
             "ticket_type":ticket_data.ticket_type, 
+            "is_feedback":ticket_data.is_feedback,
         }
         for ticket_data in ticket_datas
         ]
@@ -139,6 +140,7 @@ class ShowParticularTicketDrtailsView(APIView):
             "created_at":ticket_data.created_at,
             "solved_date":ticket_data.solved_date,
             "ticket_type":ticket_data.ticket_type, 
+            "is_feedback":ticket_data.is_feedback,
             }
             return Response({'status':'true','message':'Ticket Details !!','ticketdetail':ticket_details})
         else:
