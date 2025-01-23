@@ -209,6 +209,12 @@ class TicketParticularDeleteView(View):
         ticket_data=Ticket.objects.get(id=id).delete()
         return redirect('RaiseTicketList')
     
+
+class TicketFeedbackView(View):
+    def get(self,request):
+        ticketfeedbackdatas=TicketFeedback.objects.all()
+        return render(request,'dashboard/raise_ticket/ticket_feedbacklists.html',{'tikcetfeedbackdata':ticketfeedbackdatas,'active311':'active','active3':'active'})
+    
 class NotificationListsView(View):
     def get(self,request):
         notificationdata=Notification.objects.all()
@@ -218,6 +224,10 @@ class NotificationreceiveView(View):
     def get(self,request):
         notifidata=Notification.objects.all()
         return render(request,'dashboard/Notification/notification_receive.html',{'notifidatas':notifidata})
+    
+class AddNotificationView(View):
+    def get(self,request):
+        pass
     
 class AnalyticDashboardView(View):
     def get(self,request):

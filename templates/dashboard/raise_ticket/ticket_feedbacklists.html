@@ -1,0 +1,80 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <div class="container-fluid p-1">
+            <div class="shadow_section">
+                <div id="error-container">
+                    {% if messages %}
+                    <div class="alert alert-danger" role="alert">
+                        {% for message in messages %}
+                        {{ message }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="overview-wrap">
+                            <h2 class="title-1">Ticket Feedback by User</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="tablebg_clr">
+                            <div class="table-responsive table--no-card">
+                                <table class="table table-borderless table-striped table-earning" id="mytableticketfeedback">
+                                    <thead>
+                                        <tr>
+                                            <th>S.No</th>
+                                            <th>User</th>
+                                            <th>Ticket Number</th>
+                                            <th>Rating</th>
+                                            <th>Feedback</th>
+                                            <th>Delete</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for data in tikcetfeedbackdata %}
+                                        <tr>
+                                            <td>{{forloop.counter}}</td>
+                                            <td>{{data.user.username}}</td>
+                                            <td>{{data.ticket_id.ticket_number}}</td>
+                                            <td>{{data.satisfaction_score}}</td>
+                                            <td>{{data.feedback_desciption}}</td>
+                                            <td>
+                                                <a href="#"
+                                                    onclick="return confirm('Are you sure you want to delete..');">
+                                                    <i class="fas fa-trash-alt"></i> <!-- Delete icon -->
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#mytableticketfeedback').DataTable({
+
+            language: {
+                searchPlaceholder: "Type here..."
+
+            }
+        });
+    });
+    window.setTimeout(function () {
+        $(".alert").fadeTo(500, 0).slideUp(500, function () {
+            $(this).remove();
+        });
+    }, 4000);
+</script>
+{% endblock content %}
