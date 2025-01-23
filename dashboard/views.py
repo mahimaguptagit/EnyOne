@@ -197,11 +197,17 @@ class TicketUpdateDetailsView(View):
         if assigned_data:
             ticket_data.assigned_request=userdata
             ticket_data.is_assign=True
+            ticket_data.submission_status=submission_status
+            ticket_data.save()
+            messages.success(request,'Ticket Data Updated')
         if submission_status == 'Resolved':
-            ticket_data.solved_date=currentdatetime
-        ticket_data.submission_status=submission_status
-        ticket_data.save()
-        messages.success(request,'Ticket Data Updated')
+            if ticket_data.is_assign == True:
+                ticket_data.solved_date=currentdatetime
+                ticket_data.submission_status=submission_status
+                ticket_data.save()
+                messages.success(request,'Ticket Data Updated')
+            else:
+                messages.success(request,'First Assign Ticket')
         return redirect('RaiseTicketList')
     
 class TicketParticularDeleteView(View):
