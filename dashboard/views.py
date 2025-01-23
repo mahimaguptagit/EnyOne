@@ -212,7 +212,7 @@ class TicketParticularDeleteView(View):
 
 class TicketFeedbackView(View):
     def get(self,request):
-        ticketfeedbackdatas=TicketFeedback.objects.all()
+        ticketfeedbackdatas=TicketFeedback.objects.all().order_by('-id')
         return render(request,'dashboard/raise_ticket/ticket_feedbacklists.html',{'tikcetfeedbackdata':ticketfeedbackdatas,'active311':'active','active3':'active'})
     
 class TicketFeedbackDeleteView(View):
