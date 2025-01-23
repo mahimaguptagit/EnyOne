@@ -19,6 +19,7 @@ urlpatterns = [
     path('ticket-update-detail/<int:id>/',views.TicketUpdateDetailsView.as_view(),name='TicketUpdateDetails'),
     path('ticket-particular-delete/<int:id>/',views.TicketParticularDeleteView.as_view(),name='TicketParticularDelete'),
     path('ticket-feedback-lists/',views.TicketFeedbackView.as_view(),name='TicketFeedback'),
+    path('ticket-feedback-delete/<int:id>/',views.TicketFeedbackDeleteView.as_view(),name='TicketFeedbackDelete'),
     path('show-notificationlists/',views.NotificationListsView.as_view(),name='NotificationLists'),
     path('show-receive-notification/',views.NotificationreceiveView.as_view(),name='Notificationreceive'),
     path('add-notification/',views.AddNotificationView.as_view(),name='AddNotification')

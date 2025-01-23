@@ -215,6 +215,11 @@ class TicketFeedbackView(View):
         ticketfeedbackdatas=TicketFeedback.objects.all()
         return render(request,'dashboard/raise_ticket/ticket_feedbacklists.html',{'tikcetfeedbackdata':ticketfeedbackdatas,'active311':'active','active3':'active'})
     
+class TicketFeedbackDeleteView(View):
+    def get(self,request,id):
+        ticketdata=TicketFeedback.objects.get(id=id).delete()
+        return redirect('TicketFeedback')
+    
 class NotificationListsView(View):
     def get(self,request):
         notificationdata=Notification.objects.all()
