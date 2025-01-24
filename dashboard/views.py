@@ -195,20 +195,36 @@ class TicketUpdateDetailsView(View):
         userdata=User.objects.filter(id=assigned_data,is_admin=True).first()
         currentdatetime=timezone.now()
         if assigned_data:
-            ticket_data.assigned_request=userdata
-            ticket_data.is_assign=True
-            ticket_data.submission_status=submission_status
-            ticket_data.save()
-            messages.success(request,'Ticket Data Updated')
-        if submission_status == 'Resolved':
-            if ticket_data.is_assign == True:
-                ticket_data.solved_date=currentdatetime
+            if submission_status == 'Resolved':
+                messages.success(request,'First Assign Ticket')
+                return redirect('TicketUpdateDetails', id=id)
+            elif submission_status == 'In Progress':
+                ticket_data.assigned_request=userdata
+                ticket_data.is_assign=True
                 ticket_data.submission_status=submission_status
                 ticket_data.save()
                 messages.success(request,'Ticket Data Updated')
+                return redirect('RaiseTicketList')
             else:
-                messages.success(request,'First Assign Ticket')
-        return redirect('RaiseTicketList')
+                messages.error(request,'Ticket already received !!')
+                return redirect('TicketUpdateDetails', id=id)
+        else:
+            if submission_status == 'Resolved':
+                if ticket_data.is_assign == True:
+                    ticket_data.solved_date=currentdatetime
+                    ticket_data.submission_status=submission_status
+                    ticket_data.save()
+                    messages.success(request,'Ticket Data Updated')
+                    return redirect('RaiseTicketList')
+                else:
+                    messages.success(request,'First Assign Ticket')
+                    return redirect('TicketUpdateDetails', id=id)
+            elif submission_status == 'In Progress' : 
+                    messages.error(request,'Already Assign')
+                    return redirect('TicketUpdateDetails', id=id)
+            else:
+                messages.error(request,'Ticket already received !!')
+                return redirect('TicketUpdateDetails', id=id)
     
 class TicketParticularDeleteView(View):
     def get(self,request,id):
