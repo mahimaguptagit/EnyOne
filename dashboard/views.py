@@ -237,6 +237,11 @@ class TicketFeedbackView(View):
         ticketfeedbackdatas=TicketFeedback.objects.all().order_by('-id')
         return render(request,'dashboard/raise_ticket/ticket_feedbacklists.html',{'tikcetfeedbackdata':ticketfeedbackdatas,'active311':'active','active3':'active'})
     
+class TicketFeedbackDetailPageView(View):
+    def get(self,request,id):
+        ticket_data=Ticket.objects.get(id=id)
+        return render(request,'dashboard/raise_ticket/showticketfeedbackdetails.html',{'data':ticket_data,'active3':'active','active311':'active'})
+    
 class TicketFeedbackDeleteView(View):
     def get(self,request,id):
         ticketdata=TicketFeedback.objects.get(id=id).delete()

@@ -30,6 +30,7 @@
                                             <th>S.No</th>
                                             <th>User</th>
                                             <th>Ticket Number</th>
+                                            <th>Details</th>
                                             <th>Rating</th>
                                             <th>Feedback</th>
                                             <th>Delete</th>
@@ -41,6 +42,9 @@
                                             <td>{{forloop.counter}}</td>
                                             <td>{{data.user.username}}</td>
                                             <td>{{data.ticket_id.ticket_number}}</td>
+                                            <td><a href="{% url 'TicketFeedbackDetailPage' data.id %}"><span class="role "><i
+                                                class="fas fa-eye"></i>
+                                            </span> </a></td>
                                             <td>{{data.satisfaction_score}}</td>
                                             <td>{{data.feedback_desciption}}</td>
                                             <td>
