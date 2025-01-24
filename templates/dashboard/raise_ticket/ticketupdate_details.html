@@ -6,6 +6,15 @@
 <div class="main-content">
     <div class="section__content section__content--p30">
         <div class="container-flui p-1">
+            <div id="error-container">
+                {% if messages %}
+                <div class="alert alert-danger" role="alert">
+                  {% for message in messages %}
+                  {{ message }}
+                  {% endfor %}
+                </div>
+                {% endif %}
+            </div>
             <div class="row">
                 <div class="col-lg-10">
                     <div class="user_profile">
