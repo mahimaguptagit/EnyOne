@@ -9,6 +9,7 @@ from .powerbi_service import PowerBIService
 from dashboard.models import *
 from .serializers import *
 from datetime import datetime
+from dashboard.utils import *
 
 # Create your views here.
 
@@ -65,7 +66,7 @@ class UserRaiseTicketView(APIView):
 
             if not ticket_type and not ticket_title and not priority_level and not ticket_description:
                 return Response({'status':'false','message':'Check Required Fields !!'})
-
+            
             try:
                 latest_ticket_id = Ticket.objects.latest('id').id + 1 if Ticket.objects.exists() else 1
                 timestamp_part = datetime.now().strftime('%y%m%d%H%M%S%f')[:-3]
@@ -79,7 +80,7 @@ class UserRaiseTicketView(APIView):
                     priority_level=priority_level,
                     ticket_file=ticket_file
                 )
-
+                send_acknowleadgemnet_confirm(userdata.email,ticket_data.ticket_number,userdata)
                 return Response({'status': 'true', 'message': 'Ticket raised successfully'})
 
             except Exception as e:

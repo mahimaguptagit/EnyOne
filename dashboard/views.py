@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate,login as dj_login,logout as dj_logo
 from .models import *
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from .utils import send_otp
+from .utils import *
 from django.utils import timezone
 from django.contrib import messages
 
@@ -211,9 +211,13 @@ class TicketUpdateDetailsView(View):
         else:
             if submission_status == 'Resolved':
                 if ticket_data.is_assign == True:
+                    if ticket_data.submission_status == 'Resolved':
+                        messages.error(request,'Already Resolved')
+                        return redirect('TicketUpdateDetails', id=id)
                     ticket_data.solved_date=currentdatetime
                     ticket_data.submission_status=submission_status
                     ticket_data.save()
+                    send_resolved_ticket(ticket_data.user.email,ticket_data.ticket_number,ticket_data.user)
                     messages.success(request,'Ticket Data Updated')
                     return redirect('RaiseTicketList')
                 else:
