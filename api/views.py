@@ -80,11 +80,12 @@ class UserRaiseTicketView(APIView):
                     priority_level=priority_level,
                     ticket_file=ticket_file
                 )
-                send_acknowleadgemnet_confirm(userdata.email,ticket_data.ticket_number,userdata)
+                send_acknowleadgemnet_confirm(ticket_data.user.email,ticket_data.ticket_number,userdata)
                 return Response({'status': 'true', 'message': 'Ticket raised successfully'})
 
             except Exception as e:
-                return Response({'status': 'false', 'message': 'Something went wrong'})
+                return Response({'status': 'false', 'message': str(e)})
+                # return Response({'status': 'false', 'message': 'Something went wrong'})
         
         return Response({'status': 'false', 'message': 'Invalid data'})
     

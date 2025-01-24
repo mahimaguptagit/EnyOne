@@ -22,7 +22,7 @@ def send_acknowleadgemnet_confirm(email,refernce_number,userdata):
         message=f'Ticket has been received successfully . Reference Number of ticket is {ticket_number} for tracking '
         from_email=settings.EMAIL_HOST_USER
         send_mail(subject,message,from_email,[email])
-        admindata=User.objects.filter(is_superuser=True,is_admin=True)
+        admindata=User.objects.filter(is_superuser=True,is_admin=True).first()
         Notification.objects.create(sender=admindata,receiver=userdata,notification_title=subject,notification_description=message)
 
 def send_resolved_ticket(email,refernce_number,userdata):
@@ -31,7 +31,7 @@ def send_resolved_ticket(email,refernce_number,userdata):
         message=f'Ticket has been resolved successfully for reference number - {ticket_number}'
         from_email=settings.EMAIL_HOST_USER
         send_mail(subject,message,from_email,[email])
-        admindata=User.objects.filter(is_superuser=True,is_admin=True)
+        admindata=User.objects.filter(is_superuser=True,is_admin=True).first()
         Notification.objects.create(sender=admindata,receiver=userdata,notification_title=subject,notification_description=message)
 
 
