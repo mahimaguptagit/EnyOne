@@ -49,9 +49,13 @@
                     <tr>
                       <td>{{forloop.counter}}</td>
                       <td>{{data.ticket_number}}</td>
-                      <td><a href="{% url 'TicketDetailPage' data.id %}"><span class="role "><i
-                        class="fas fa-eye"></i>
-                    </span> </a></td>
+                      <td>
+                        <a href="{% url 'TicketDetailPage' data.id %}">
+                          <span class="role ">
+                            <i class="fas fa-eye"></i>
+                          </span> 
+                        </a>
+                      </td>
                       <td>{{data.user.username}}</td>
                       <td>{{data.ticket_type}}</td>
                       <td>{{data.ticket_title}}</td>
