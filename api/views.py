@@ -186,6 +186,55 @@ class ShowTicketFeedbackView(APIView):
             'feedback_desciption':feedback_data.feedback_desciption
         }
         return Response({'status':'true','message':'Feedback Data For Given Ticket ID','feedback_details':feedbackdata})
+    
+class ShowNotificationView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, format=None):
+        notifi_datas = Notification.objects.filter(receiver=request.user,is_delete=False).order_by('-id')
+        for notif in notifi_datas:
+                notif.reader=True
+                notif.save()
+        notifi_data_lists = [
+                {
+                    'id': notifi_data.id,
+                    'receiver': notifi_data.receiver.username,
+                    'sender': notifi_data.sender.username,
+                    'notification_title': notifi_data.notification_title,
+                    'notification_description': notifi_data.notification_description,
+                    'reader': notifi_data.reader,
+                    'created_at': notifi_data.created_at,
+                }
+                for notifi_data in notifi_datas
+            ]
+        return Response({'status':'True', 'msg':'Notification Details', "data": notifi_data_lists}) 
+    
+class NotificationNumberView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request,format=None):
+        notification_read=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return Response({'status':'True','msg':'Notification Count','count':notification_read})
+    
+class ParticularNotificationDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        try:
+            noti_id=request.data.get('notification_id')
+            notifi_datas = Notification.objects.get(receiver=request.user,id=noti_id,is_delete=False)
+            notifi_datas.is_delete = True
+            notifi_datas.save()
+            return Response({'status':'True', 'msg':'Notification Deleted'}) 
+        except Notification.DoesNotExist:
+            return Response({'status':'False', 'msg': 'Notification record not found.'})
+
+class ClearAllNotificationView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, format=None):
+        notifi_data = Notification.objects.filter(receiver=request.user,is_delete=False)
+        for i in notifi_data:
+            i.is_delete = True
+            i.save()
+       
+        return Response({'status':'True', 'msg':'All Notification Delete'})
 
         
 
