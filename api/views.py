@@ -203,7 +203,7 @@ class ShowNotificationView(APIView):
                     'notification_title': notifi_data.notification_title,
                     'notification_description': notifi_data.notification_description,
                     'reader': notifi_data.reader,
-                    'created_at': notifi_data.created_at,
+                    'created_at': notifi_data.created_at.strftime('%Y-%m-%d %H:%M:%S') if notifi_data.created_at else None,
                 }
                 for notifi_data in notifi_datas
             ]
