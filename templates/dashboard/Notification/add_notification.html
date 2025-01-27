@@ -1,0 +1,117 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="main-content">
+    <div class="section__content section__content--p30">
+        <div class="container-fluid p-1">
+            <div id="error-container">
+                {% if messages %}
+                    <div class="alert alert-danger" role="alert">
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                <div class="col-lg-10">
+                    <div class="user_profile">
+                        <div class="card-header">
+                            <h5>Edit Profile</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="" method="post" class="" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                <div class="bottom_border">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-6">
+                                            <label for="username">User Name : </label>
+                                            <input type="text" id="username" name="username" placeholder="Enter Username"
+                                                class="form-control" required value="{{ user.username }}" >
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <label for="email">Email : </label>
+                                            <input type="email" id="email" name="email" placeholder="Enter Email" class="form-control"  value="{{ user.email }}"  pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bottom_border">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-6">
+                                            <label for="first_name">First Name : </label>
+                                            <input type="text" id="first_name" name="first_name" placeholder="Enter First Name"
+                                                class="form-control" required value="{{ user.first_name }}" >
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <label for="last_name">Last Name : </label>
+                                            <input type="text" id="last_name" name="last_name" placeholder="Enter Last Name"
+                                                class="form-control" required value="{{ user.last_name }}" >
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bottom_border">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-6">
+                                            <label for="phone_number">Phone Number : </label>
+                                            <input type="text" id="phone_number" name="phone_number" placeholder="Enter Phone Number" class="form-control" pattern="^\+?[0-9]*$" required value="{{ user.phone_number }}">
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <label>Update Image :</label>
+                                            <label for="image" class="imageee">
+                                                <div class="profile-image" id="front_images3">
+                                                {% if user.image %}
+                                                   <img src="{{ user.image.url }}" alt="User Image" style="height: 100%;" id="front_image3">
+                                                {% else %}
+                                                    <img src="{{ default.png.url }}" alt="User Image" id="front_image3">
+                                                {% endif %}
+                                                </div>
+                                            </label>
+                                            <input type="file" id="image" name="image" class="form-control-file "
+                                                accept="image/*" onchange="front_show(event, 'front_image3', 'front_images3')" >
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <button type="Submit" class="btn submit_btn">Update Profile</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Disable the validation of the jQuery Validate library.
+    $(document).ready(function () {
+        $.validator.setDefaults({
+            ignore: []
+        });
+    });
+    // Validate the select element using JavaScript.
+    $(document).ready(function () {
+        $('#selectLg').on('change', function () {
+            if ($(this).val() === '') {
+                // Prevent the form from submitting.
+                event.preventDefault();
+
+                // Display an error message.
+                alert('Please select a user type.');
+            }
+        });
+    });
+    window.setTimeout(function() {
+        $(".alert").fadeTo(500, 0).slideUp(500, function(){
+            $(this).remove();
+        });
+    }, 4000);
+    document.getElementById('phone_number').addEventListener('input', function (e) {
+        this.value = this.value.replace(/[^0-9+]/g, '');
+    });
+</script>
+{% endblock content %}

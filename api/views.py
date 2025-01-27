@@ -207,13 +207,13 @@ class ShowNotificationView(APIView):
                 }
                 for notifi_data in notifi_datas
             ]
-        return Response({'status':'True', 'msg':'Notification Details', "data": notifi_data_lists}) 
+        return Response({'status':'true', 'msg':'Notification Details', "data": notifi_data_lists}) 
     
 class NotificationNumberView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request,format=None):
         notification_read=Notification.objects.filter(receiver=request.user,reader=False).count()
-        return Response({'status':'True','msg':'Notification Count','count':notification_read})
+        return Response({'status':'true','msg':'Notification Count','count':notification_read})
     
 class ParticularNotificationDeleteView(APIView):
     permission_classes = [IsAuthenticated]
@@ -223,9 +223,9 @@ class ParticularNotificationDeleteView(APIView):
             notifi_datas = Notification.objects.get(receiver=request.user,id=noti_id,is_delete=False)
             notifi_datas.is_delete = True
             notifi_datas.save()
-            return Response({'status':'True', 'msg':'Notification Deleted'}) 
+            return Response({'status':'true', 'msg':'Notification Deleted'}) 
         except Notification.DoesNotExist:
-            return Response({'status':'False', 'msg': 'Notification record not found.'})
+            return Response({'status':'false', 'msg': 'Notification record not found.'})
 
 class ClearAllNotificationView(APIView):
     permission_classes = [IsAuthenticated]
@@ -235,7 +235,7 @@ class ClearAllNotificationView(APIView):
             i.is_delete = True
             i.save()
        
-        return Response({'status':'True', 'msg':'All Notification Delete'})
+        return Response({'status':'true', 'msg':'All Notification Delete'})
 
         
 
