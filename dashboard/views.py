@@ -253,17 +253,17 @@ class TicketFeedbackDeleteView(View):
     
 class NotificationListsView(View):
     def get(self,request):
-        notificationdata=Notification.objects.all()
+        notificationdata=Notification.objects.filter(sender=request.user)
         return render(request,'dashboard/Notification/notification_list.html',{'active4':'active','notifidetails':notificationdata})
     
 class NotificationreceiveView(View):
     def get(self,request):
-        notifidata=Notification.objects.all()
+        notifidata=Notification.objects.filter(receiver=request.user)
         return render(request,'dashboard/Notification/notification_receive.html',{'notifidatas':notifidata})
     
 class AddNotificationView(View):
     def get(self,request):
-        pass
+        return render(request,'dashboard/Notification/add_notification.html')
     
 class AnalyticDashboardView(View):
     def get(self,request):
