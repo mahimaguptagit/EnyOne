@@ -3,6 +3,97 @@
 
 {% block content %}
 
+<style>
+    .dropdown {
+      position: relative;
+      font-size: 14px;
+      color: #333;
+    }
+  
+    .dropdown-list a {
+      color: #9a783b;
+      font-weight: 500;
+  
+    }
+  
+    .dropdown-list {
+      padding: 12px;
+      background: #fff;
+      position: absolute;
+      top: 30px;
+      left: 2px;
+      right: 2px;
+      box-shadow: 0 1px 2px 1px rgba(0, 0, 0, .15);
+      transform-origin: 50% 0;
+      transform: scale(1, 0);
+      transition: transform .15s ease-in-out .15s;
+      max-height: 26vh;
+      overflow-y: scroll;
+    }
+  
+    .dropdown-list::-webkit-scrollbar {
+      width: 5px;
+    }
+  
+    .dropdown-list::-webkit-scrollbar-thumb {
+      background-color: #ddd;
+      border-radius: 5px;
+    }
+  
+    .dropdown-option {
+      display: block;
+      padding: 8px 12px;
+      opacity: 0;
+      transition: opacity .15s ease-in-out;
+    }
+  
+    .dropdown-label {
+      display: block;
+      height: 39px;
+      background: #fff;
+      border: 1px solid #ced4da;
+      padding: 10px 12px;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: 5px;
+      position: relative;
+    }
+  
+    .dropdown-label:before {
+      content: '▼';
+      font-size: 10px;
+      position: absolute;
+      right: 12px;
+      top: 13px;
+      color: #424244;
+    }
+  
+    .dropdown.on .dropdown-list {
+      transform: scale(1, 1);
+      transition-delay: 0s;
+    }
+  
+    .dropdown.on .dropdown-list .dropdown-option {
+      opacity: 1;
+      transition-delay: .2s;
+    }
+  
+    .dropdown.on .dropdown-label:before {
+      content: '▲';
+    }
+  
+    [type="checkbox"] {
+      position: relative;
+      top: -1px;
+      margin-right: 4px;
+    }
+  
+    .nav-tabs .nav-link {
+      color: #424244;
+      font-weight: 600;
+    }
+</style>
+
 <div class="main-content">
     <div class="section__content section__content--p30">
         <div class="container-fluid p-1">
@@ -19,65 +110,52 @@
                 <div class="col-lg-10">
                     <div class="user_profile">
                         <div class="card-header">
-                            <h5>Edit Profile</h5>
+                            <h5><a href="{% url 'NotificationLists' %}"><i class="fa fa-caret-left"></i></a>Add Notification</h5>
                         </div>
                         <div class="card-body">
                             <form action="" method="post" class="" enctype="multipart/form-data">
                                 {% csrf_token %}
-                                <input type="hidden" name="user_id" value="{{ user.id }}">
                                 <div class="bottom_border">
-                                    <div class="row align-items-center">
-                                        <div class="col-lg-6">
-                                            <label for="username">User Name : </label>
-                                            <input type="text" id="username" name="username" placeholder="Enter Username"
-                                                class="form-control" required value="{{ user.username }}" >
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <label for="email">Email : </label>
-                                            <input type="email" id="email" name="email" placeholder="Enter Email" class="form-control"  value="{{ user.email }}"  pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" required>
-                                        </div>
+                                  <div class="row align-items-center">
+                                    <div class="col-lg-12">
+                                      <input type="text" id="title" name="title" placeholder="Enter Title" class="form-control"
+                                        required>
                                     </div>
+                                  </div>
                                 </div>
                                 <div class="bottom_border">
-                                    <div class="row align-items-center">
-                                        <div class="col-lg-6">
-                                            <label for="first_name">First Name : </label>
-                                            <input type="text" id="first_name" name="first_name" placeholder="Enter First Name"
-                                                class="form-control" required value="{{ user.first_name }}" >
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <label for="last_name">Last Name : </label>
-                                            <input type="text" id="last_name" name="last_name" placeholder="Enter Last Name"
-                                                class="form-control" required value="{{ user.last_name }}" >
-                                        </div>
+                                  <div class="row align-items-center">
+                                    <div class="col-lg-12">
+                                      <input type="text" id="description" name="description" placeholder="Enter Message...."
+                                        class="form-control" required>
                                     </div>
+                                  </div>
                                 </div>
                                 <div class="bottom_border">
-                                    <div class="row align-items-center">
-                                        <div class="col-lg-6">
-                                            <label for="phone_number">Phone Number : </label>
-                                            <input type="text" id="phone_number" name="phone_number" placeholder="Enter Phone Number" class="form-control" pattern="^\+?[0-9]*$" required value="{{ user.phone_number }}">
+                                  <div class="row align-items-center">
+                                    <div class="col-lg-12">
+                                      <h6>All Recepient</h6>
+                                      <div class="dropdown" data-control="checkbox-dropdown">
+                                        <label class="dropdown-label">Select</label>
+                                        <div class="dropdown-list">
+                                          <a href="#" data-toggle="check-all" class="dropdown-option">
+                                            Check All
+                                          </a>
+                                          {% for user in user_datas %}
+                                          <label class="dropdown-option">
+                                            <input type="checkbox" name="selected_users" value="{{ user.id }}">{{ user.username }}
+                                          </label>
+                                          {% endfor %}
                                         </div>
-                                        <div class="col-lg-6">
-                                            <label>Update Image :</label>
-                                            <label for="image" class="imageee">
-                                                <div class="profile-image" id="front_images3">
-                                                {% if user.image %}
-                                                   <img src="{{ user.image.url }}" alt="User Image" style="height: 100%;" id="front_image3">
-                                                {% else %}
-                                                    <img src="{{ default.png.url }}" alt="User Image" id="front_image3">
-                                                {% endif %}
-                                                </div>
-                                            </label>
-                                            <input type="file" id="image" name="image" class="form-control-file "
-                                                accept="image/*" onchange="front_show(event, 'front_image3', 'front_images3')" >
-                                        </div>
+                                      </div>
                                     </div>
+                                  </div>
                                 </div>
-                                <div class="text-center">
-                                    <button type="Submit" class="btn submit_btn">Update Profile</button>
+                                <br>
+                                <div>
+                                  <button type="submit" class="btn submit_btn mt-0">Add Notification</button>
                                 </div>
-                            </form>
+                              </form>
                         </div>
                     </div>
                 </div>
@@ -86,32 +164,110 @@
     </div>
 </div>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.4/js/select2.min.js"></script>
 <script>
-    // Disable the validation of the jQuery Validate library.
-    $(document).ready(function () {
-        $.validator.setDefaults({
-            ignore: []
-        });
-    });
-    // Validate the select element using JavaScript.
-    $(document).ready(function () {
-        $('#selectLg').on('change', function () {
-            if ($(this).val() === '') {
-                // Prevent the form from submitting.
-                event.preventDefault();
+  (function ($) {
+    var CheckboxDropdown = function (el) {
+      var _this = this;
+      this.isOpen = false;
+      this.areAllChecked = false;
+      this.$el = $(el);
+      this.$label = this.$el.find('.dropdown-label');
+      this.$checkAll = this.$el.find('[data-toggle="check-all"]').first();
+      this.$inputs = this.$el.find('[type="checkbox"]');
 
-                // Display an error message.
-                alert('Please select a user type.');
-            }
+      this.onCheckBox();
+
+      this.$label.on('click', function (e) {
+        e.preventDefault();
+        _this.toggleOpen();
+      });
+
+      this.$checkAll.on('click', function (e) {
+        e.preventDefault();
+        _this.onCheckAll();
+      });
+
+      this.$inputs.on('change', function (e) {
+        _this.onCheckBox();
+      });
+    };
+
+    CheckboxDropdown.prototype.onCheckBox = function () {
+      this.updateStatus();
+    };
+
+    CheckboxDropdown.prototype.updateStatus = function () {
+      var checked = this.$el.find(':checked');
+
+      this.areAllChecked = false;
+      this.$checkAll.html('Check All');
+
+      if (checked.length <= 0) {
+        this.$label.html('Select Options');
+      }
+      else if (checked.length === 1) {
+        this.$label.html(checked.parent('label').text());
+      }
+      else if (checked.length === this.$inputs.length) {
+        this.$label.html('All Selected');
+        this.areAllChecked = true;
+        this.$checkAll.html('Uncheck All');
+      }
+      else {
+        this.$label.html(checked.length + ' Selected');
+      }
+    };
+
+    CheckboxDropdown.prototype.onCheckAll = function (checkAll) {
+      if (!this.areAllChecked || checkAll) {
+        this.areAllChecked = true;
+        this.$checkAll.html('Uncheck All');
+        this.$inputs.prop('checked', true);
+      }
+      else {
+        this.areAllChecked = false;
+        this.$checkAll.html('Check All');
+        this.$inputs.prop('checked', false);
+      }
+
+      this.updateStatus();
+    };
+
+    CheckboxDropdown.prototype.toggleOpen = function (forceOpen) {
+      var _this = this;
+
+      if (!this.isOpen || forceOpen) {
+        this.isOpen = true;
+        this.$el.addClass('on');
+        $(document).on('click', function (e) {
+          if (!$(e.target).closest('[data-control]').length) {
+            _this.toggleOpen();
+          }
         });
-    });
-    window.setTimeout(function() {
-        $(".alert").fadeTo(500, 0).slideUp(500, function(){
-            $(this).remove();
-        });
+      }
+      else {
+        this.isOpen = false;
+        this.$el.removeClass('on');
+        $(document).off('click');
+      }
+    };
+
+    var checkboxesDropdowns = document.querySelectorAll('[data-control="checkbox-dropdown"]');
+    for (var i = 0, length = checkboxesDropdowns.length; i < length; i++) {
+      new CheckboxDropdown(checkboxesDropdowns[i]);
+    }
+  })(jQuery);
+
+  // Notification hide
+  $(document).ready(function () {
+    window.setTimeout(function () {
+      $(".alert").fadeTo(500, 0).slideUp(500, function () {
+        $(this).remove();
+      });
     }, 4000);
-    document.getElementById('phone_number').addEventListener('input', function (e) {
-        this.value = this.value.replace(/[^0-9+]/g, '');
-    });
+  });
 </script>
 {% endblock content %}

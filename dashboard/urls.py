@@ -23,6 +23,7 @@ urlpatterns = [
     path('ticket-feedback-delete/<int:id>/',views.TicketFeedbackDeleteView.as_view(),name='TicketFeedbackDelete'),
     path('show-notificationlists/',views.NotificationListsView.as_view(),name='NotificationLists'),
     path('show-receive-notification/',views.NotificationreceiveView.as_view(),name='Notificationreceive'),
-    path('add-notification/',views.AddNotificationView.as_view(),name='AddNotification')
+    path('add-notification/',views.AddNotificationView.as_view(),name='AddNotification'),
+    path('delete-admin-notification/<int:id>/',views.DeleteAdminParticularNotificationView.as_view(),name='DeleteAdminNotification'),
     
 ]

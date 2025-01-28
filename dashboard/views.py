@@ -128,8 +128,6 @@ class AdminForgetPasswordView(View):
         if newpassword != confirmpassword:
             messages.error(request, 'New Password and Confirm Password must be the same.')
             return redirect('AdminForgetPassword')
-
-        # Set the new password
         user.set_password(newpassword)
         user.save()
         messages.success(request, 'Password changed successfully!')
@@ -149,12 +147,13 @@ class ManageUserView(View):
         userdata=User.objects.filter(is_superuser=False).order_by('-id')
         return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'active2':'active'})
     
-
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ShowUserDetailsView(View):
     def get(self,request,id):
         userdata=User.objects.get(id=id)
         return render(request,'dashboard/User/show_userdetails.html',{'user':userdata,'active2':'active'})
     
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')    
 class AddUserView(View):
     def get(self,request):
         return render(request,'dashboard/User/add_userdata.html')
@@ -178,11 +177,13 @@ class RaiseTicketListView(View):
         ticketdata=Ticket.objects.all().order_by('-id')
         return render(request,'dashboard/raise_ticket/show_ticketlist.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
     
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class TicketDetailPageView(View):
     def get(self,request,id):
         ticket_data=Ticket.objects.get(id=id)
         return render(request,'dashboard/raise_ticket/ticket_details.html',{'data':ticket_data,'active3':'active','active310':'active'})
-    
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class TicketUpdateDetailsView(View):
     def get(self,request,id):
         ticket_data=Ticket.objects.get(id=id)
@@ -229,42 +230,65 @@ class TicketUpdateDetailsView(View):
             else:
                 messages.error(request,'Ticket already received !!')
                 return redirect('TicketUpdateDetails', id=id)
-    
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class TicketParticularDeleteView(View):
     def get(self,request,id):
         ticket_data=Ticket.objects.get(id=id).delete()
         return redirect('RaiseTicketList')
     
-
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class TicketFeedbackView(View):
     def get(self,request):
         ticketfeedbackdatas=TicketFeedback.objects.all().order_by('-id')
         return render(request,'dashboard/raise_ticket/ticket_feedbacklists.html',{'tikcetfeedbackdata':ticketfeedbackdatas,'active311':'active','active3':'active'})
-    
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')    
 class TicketFeedbackDetailPageView(View):
     def get(self,request,id):
         ticket_data=Ticket.objects.get(id=id)
         return render(request,'dashboard/raise_ticket/showticketfeedbackdetails.html',{'data':ticket_data,'active3':'active','active311':'active'})
-    
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class TicketFeedbackDeleteView(View):
     def get(self,request,id):
         ticketdata=TicketFeedback.objects.get(id=id).delete()
         return redirect('TicketFeedback')
-    
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class NotificationListsView(View):
     def get(self,request):
         notificationdata=Notification.objects.filter(sender=request.user)
         return render(request,'dashboard/Notification/notification_list.html',{'active4':'active','notifidetails':notificationdata})
-    
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class NotificationreceiveView(View):
     def get(self,request):
         notifidata=Notification.objects.filter(receiver=request.user)
         return render(request,'dashboard/Notification/notification_receive.html',{'notifidatas':notifidata})
-    
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class AddNotificationView(View):
     def get(self,request):
-        return render(request,'dashboard/Notification/add_notification.html')
-    
+        userdatas=User.objects.filter(is_superuser=False,is_active=True)
+        return render(request,'dashboard/Notification/add_notification.html',{'user_datas':userdatas})
+    def post(self,request):
+        notification_title=request.POST.get('title')
+        notification_description=request.POST.get('description')
+        selected_users = request.POST.getlist('selected_users')
+        recipients = User.objects.filter(pk__in=selected_users,is_active=True)
+        for recipient in recipients:
+            Notification.objects.create(notification_title=notification_title,notification_description=notification_description,sender=request.user,receiver=recipient)
+        return redirect('NotificationLists')
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
+class DeleteAdminParticularNotificationView(View):
+    def get(self,request,id):
+        Notification.objects.get(id=id).delete()
+        return redirect('NotificationLists')
+
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class AnalyticDashboardView(View):
     def get(self,request):
         return render(request,'dashboard/analytical_dashboard.html')
