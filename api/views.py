@@ -122,8 +122,8 @@ class UserRaiseTicketView(APIView):
                 return Response({'status': 'true', 'message': 'Ticket raised successfully'})
 
             except Exception as e:
-                return Response({'status': 'false', 'message': str(e)})
-                # return Response({'status': 'false', 'message': 'Something went wrong'})
+                # return Response({'status': 'false', 'message': str(e)})
+                return Response({'status': 'false', 'message': 'Something went wrong'})
         
         return Response({'status': 'false', 'message': 'Invalid data'})
     
