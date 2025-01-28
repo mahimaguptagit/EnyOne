@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
-from .powerbi_service import PowerBIService
+# from .powerbi_service import PowerBIService
 from dashboard.models import *
 from .serializers import *
 from datetime import datetime
