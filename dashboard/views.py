@@ -258,13 +258,13 @@ class TicketFeedbackDeleteView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class NotificationListsView(View):
     def get(self,request):
-        notificationdata=Notification.objects.filter(sender=request.user)
+        notificationdata=Notification.objects.filter(sender=request.user).order_by('-id')
         return render(request,'dashboard/Notification/notification_list.html',{'active4':'active','notifidetails':notificationdata})
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class NotificationreceiveView(View):
     def get(self,request):
-        notifidata=Notification.objects.filter(receiver=request.user)
+        notifidata=Notification.objects.filter(receiver=request.user).order_by('-id')
         return render(request,'dashboard/Notification/notification_receive.html',{'notifidatas':notifidata})
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
