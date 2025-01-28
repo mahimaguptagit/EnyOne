@@ -48,7 +48,45 @@ class UserProfileView(APIView):
                 "image":userdata.image.url,
                 "phone_number":userdata.phone_number,}
         return Response({'status':'true','message':'User Profile Data','user_data':userdetail})
-            
+    
+class UserEmailVerificationView(APIView):
+    def post(self,request,format=None):
+        email = request.data.get('email')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'status':'false','message':'User with this email does not exist!!'})
+        send_otp(user.email)
+        return Response({'status':'true','message':'OTP sent successfully! Check your email to reset the password.'})
+    
+class UserVerifyOtpView(APIView):
+    def post(self, request,format=None):
+        email = request.data.get('email')
+        otp = request.data.get('otp')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+           return Response({'status':'false','message':'User Not Found'})
+        if user.otp==otp:
+            return Response({'status':'true','message':'Change Password as OTP is correct'})
+        else :
+            return  Response({'status':'false','message':'OTP Not Matched!!'})
+        
+class ResetUserPasswordView(APIView):
+    def post(self,request,format=None):
+        email = request.data.get('email')
+        newpassword = request.data.get('newpassword')
+        confirmpassword = request.data.get('confirmpassword')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'status':'false','message':'User Not Found'})
+        if newpassword != confirmpassword:
+            return Response({'status':'false','message':'New Password and Confirm Password must be the same.'})
+        user.set_password(newpassword)
+        user.save()
+        return Response({'status':'true','message':'Password changed successfully!'})
+
     
 class UserRaiseTicketView(APIView):
     permission_classes = [IsAuthenticated]
@@ -234,7 +272,6 @@ class ClearAllNotificationView(APIView):
         for i in notifi_data:
             i.is_delete = True
             i.save()
-       
         return Response({'status':'true', 'msg':'All Notification Delete'})
 
         
