@@ -312,6 +312,6 @@ class ShowTicketChatView(APIView):
                 }
                 for chat_data in chat_datas
             ]
-        return Response({'status':'true', 'msg':'Notification Details', "data": chat_data_lists}) 
+        return Response({'status':'true', 'msg':'Chat Details', "data": chat_data_lists}) 
 
     
