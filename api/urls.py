@@ -15,7 +15,8 @@ urlpatterns = [
     path('show-receiver-niotification/',views.ShowNotificationView.as_view(),name='ShowReceiverNotification'),
     path('show-number-notification/',views.NotificationNumberView.as_view(),name='NotificationNumber'),
     path('particular-notification-delete/',views.ParticularNotificationDeleteView.as_view(),name='ParticularNotificationDelete'),
-    path('delete-all-notification/',views.ClearAllNotificationView.as_view(),name='ClearAllNotification')
+    path('delete-all-notification/',views.ClearAllNotificationView.as_view(),name='ClearAllNotification'),
+    path('send-chat-ticket/',views.ChatTicketCreateView.as_view(),name='ChatTicketCreate')
 
     
 ]

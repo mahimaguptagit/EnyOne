@@ -274,6 +274,28 @@ class ClearAllNotificationView(APIView):
             i.save()
         return Response({'status':'true', 'msg':'All Notification Delete'})
 
-        
+# class ChatTicketDetails(models.Model):
+#     ticket_number=models.ForeignKey(Ticket,on_delete=models.CASCADE,null=True,blank=True)
+#     user=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
+#     chat=models.CharField(max_length=1000,null=True,blank=True)
+#     created_at=models.DateTimeField(auto_now_add=True,null=True,blank=True)
+#     updated_at=models.DateTimeField(auto_now=True,null=True,blank=True)       
+# 
+class ChatTicketCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None): 
+        ticket_id=request.data.get('ticket_id')
+        message=request.data.get('message')
+        if not ticket_id or not message:
+            return Response({'status':'false','message':'Please add required fields !!'})
+        userdata=User.objects.filter(id=request.user.id).first()
+        if not userdata:
+            return Response({'status':'false','message':'User Data Not Found'})
+        ticketdata=Ticket.objects.filter(id=ticket_id).first()
+        if not ticketdata:
+            return Response({'status':'false','message':'Ticket Data Not Found'})
+        chatdata=ChatTicketDetails.objects.create(ticket_number=ticketdata,user=userdata,chat=message)
+        return Response({'status':'true','message':'Chat Send Successfully'})
+
 
     

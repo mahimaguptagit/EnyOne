@@ -286,6 +286,13 @@ class DeleteAdminParticularNotificationView(View):
     def get(self,request,id):
         Notification.objects.get(id=id).delete()
         return redirect('NotificationLists')
+    
+# class ChatTicketDetails(models.Model):
+    # ticket_number=models.ForeignKey(Ticket,on_delete=models.CASCADE,null=True,blank=True)
+    # user=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
+    # chat=models.CharField(max_length=1000,null=True,blank=True)
+    # created_at=models.DateTimeField(auto_now_add=True)
+    # updated_at=models.DateTimeField(auto_now=True)
 
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
