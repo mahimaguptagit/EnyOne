@@ -305,6 +305,7 @@ class ShowTicketChatView(APIView):
                 {
                     'id': chat_data.id,
                     'sender': chat_data.user.username,
+                    'sender_id': chat_data.user.id,
                     'message': chat_data.chat,
                     'ticket_id': chat_data.ticket_number.id,
                     'reader': chat_data.is_reader,
