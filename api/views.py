@@ -274,13 +274,7 @@ class ClearAllNotificationView(APIView):
             i.save()
         return Response({'status':'true', 'msg':'All Notification Delete'})
 
-# class ChatTicketDetails(models.Model):
-#     ticket_number=models.ForeignKey(Ticket,on_delete=models.CASCADE,null=True,blank=True)
-#     user=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
-#     chat=models.CharField(max_length=1000,null=True,blank=True)
-#     created_at=models.DateTimeField(auto_now_add=True,null=True,blank=True)
-#     updated_at=models.DateTimeField(auto_now=True,null=True,blank=True)       
-# 
+
 class ChatTicketCreateView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, format=None): 
@@ -297,5 +291,27 @@ class ChatTicketCreateView(APIView):
         chatdata=ChatTicketDetails.objects.create(ticket_number=ticketdata,user=userdata,chat=message)
         return Response({'status':'true','message':'Chat Send Successfully'})
 
+class ShowTicketChatView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        ticket_id=request.data.get('ticket_id')
+        if not ticket_id :
+            return Response({'status':'false','message':'Please add required field !!'})
+        chat_datas = ChatTicketDetails.objects.filter(ticket_number=ticket_id,is_delete=False,user=request.user).order_by('-created_at')
+        for chat in chat_datas:
+                chat.is_reader=True
+                chat.save()
+        chat_data_lists = [
+                {
+                    'id': chat_data.id,
+                    'sender': chat_data.user.username,
+                    'message': chat_data.chat,
+                    'ticket_id': chat_data.ticket_number.id,
+                    'reader': chat_data.is_reader,
+                    'created_at': chat_data.created_at.strftime('%Y-%m-%d %H:%M:%S') if chat_data.created_at else None,
+                }
+                for chat_data in chat_datas
+            ]
+        return Response({'status':'true', 'msg':'Notification Details', "data": chat_data_lists}) 
 
     

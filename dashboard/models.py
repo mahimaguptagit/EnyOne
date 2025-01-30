@@ -104,6 +104,8 @@ class ChatTicketDetails(models.Model):
     ticket_number=models.ForeignKey(Ticket,on_delete=models.CASCADE,null=True,blank=True)
     user=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
     chat=models.CharField(max_length=1000,null=True,blank=True)
+    is_reader=models.BooleanField(default=False)
+    is_delete=models.BooleanField(default=False)
     created_at=models.DateTimeField(auto_now_add=True,null=True,blank=True)
     updated_at=models.DateTimeField(auto_now=True,null=True,blank=True)
 
