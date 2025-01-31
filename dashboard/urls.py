@@ -25,5 +25,6 @@ urlpatterns = [
     path('show-receive-notification/',views.NotificationreceiveView.as_view(),name='Notificationreceive'),
     path('add-notification/',views.AddNotificationView.as_view(),name='AddNotification'),
     path('delete-admin-notification/<int:id>/',views.DeleteAdminParticularNotificationView.as_view(),name='DeleteAdminNotification'),
+    path('chat-send/<int:id>/',views.ChatSendReceiveView.as_view(),name='ChatSendReceive')
     
 ]

@@ -294,6 +294,15 @@ class DeleteAdminParticularNotificationView(View):
     # created_at=models.DateTimeField(auto_now_add=True)
     # updated_at=models.DateTimeField(auto_now=True)
 
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
+class ChatSendReceiveView(View):
+    def get(self,request,id):
+        chatdatas=ChatTicketDetails.objects.filter(ticket_number=id)
+        return render(request,'dashboard/Chat/chatsend.html',{'chatdetails':chatdatas})
+    def post(self,request,id):
+        message=request.POST.get('message')
+        return redirect('ChatSendReceive' , id=id)
+
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class AnalyticDashboardView(View):
