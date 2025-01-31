@@ -136,6 +136,8 @@ class ShowRaisedTicketDataView(APIView):
             ticket_datas=Ticket.objects.filter(user=request.user,ticket_type=ticket_type).order_by('-id')
         else:
             ticket_datas=Ticket.objects.filter(user=request.user).order_by('-id')
+        userdata=request.user.id
+        print(userdata)
         ticketdetails=[{
             "ticket_id":ticket_data.id,
             "ticket_type":ticket_data.ticket_type,
@@ -155,7 +157,7 @@ class ShowRaisedTicketDataView(APIView):
         }
         for ticket_data in ticket_datas
         ]
-        return Response({'status':'true','message':'Rised Ticket Data','ticket_details':ticketdetails})
+        return Response({'status':'true','message':'Rised Ticket Data','ticket_details':ticketdetails,'user_id':userdata})
     
 class ShowParticularTicketDrtailsView(APIView):
     permission_classes = [IsAuthenticated]
