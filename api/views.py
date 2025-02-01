@@ -299,7 +299,7 @@ class ShowTicketChatView(APIView):
         ticket_id=request.data.get('ticket_id')
         if not ticket_id :
             return Response({'status':'false','message':'Please add required field !!'})
-        chat_datas = ChatTicketDetails.objects.filter(ticket_number=ticket_id,is_delete=False,user=request.user).order_by('-created_at')
+        chat_datas = ChatTicketDetails.objects.filter(ticket_number=ticket_id,is_delete=False,user=request.user)
         for chat in chat_datas:
                 chat.is_reader=True
                 chat.save()
@@ -316,5 +316,47 @@ class ShowTicketChatView(APIView):
                 for chat_data in chat_datas
             ]
         return Response({'status':'true', 'msg':'Chat Details', "data": chat_data_lists}) 
+    
+
+# class TicketChatNumberView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     def post(self, request, format=None):
+#         ticket_id=request.data.get('ticket_id')
+#         if not ticket_id :
+#             return Response({'status':'false','message':'Please add required field !!'})
+#         chat_count=0
+#         chat_datas = ChatTicketDetails.objects.filter(ticket_number=ticket_id,is_delete=False,reader=False).order_by('-created_at')
+#         for data in chat_datas:
+#             if chat_datas.user == request.user:
+#                 chat_count=chat_count
+#             else:
+#                 chat_count+=chat_count
+#         return Response({'status':'true','msg':'Notification Count','count':notification_read})
+    
+class ParticularTicketChatDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        try:
+            chat_id=request.data.get('chat_id')
+            if not chat_id :
+                return Response({'status':'false','message':'Please add required field !!'})
+            chat_datas = ChatTicketDetails.objects.get(id=chat_id,is_delete=False)
+            chat_datas.is_delete = True
+            chat_datas.save()
+            return Response({'status':'true', 'msg':'Chat Deleted'}) 
+        except ChatTicketDetails.DoesNotExist:
+            return Response({'status':'false', 'msg': 'Chat record not found.'})
+
+class ClearAllTicketChatView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        ticket_id=request.data.get('ticket_id')
+        if not ticket_id :
+            return Response({'status':'false','message':'Please add required field !!'})
+        chat_datas = ChatTicketDetails.objects.filter(ticket_number=ticket_id,is_delete=False)
+        for i in chat_datas:
+            i.is_delete = True
+            i.save()
+        return Response({'status':'true', 'msg':'All Chat Delete'})
 
     
