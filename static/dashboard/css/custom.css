@@ -541,7 +541,7 @@ label.imageee {
 }
 
 .welcome {
-  background: linear-gradient(92.21deg, #9b773b 1.38%, #cf9e52);
+  background: linear-gradient(92.21deg, hsl(202, 17%, 72%) 1.38%, #6191b8);
   color: #fff;
 }
 
