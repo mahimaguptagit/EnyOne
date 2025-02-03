@@ -234,6 +234,7 @@ class TicketUpdateDetailsView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class TicketParticularDeleteView(View):
     def get(self,request,id):
+        TicketFeedback.objects.get(ticket_id=id).delete()
         ticket_data=Ticket.objects.get(id=id).delete()
         return redirect('RaiseTicketList')
     
@@ -301,6 +302,8 @@ class ChatSendReceiveView(View):
         return render(request,'dashboard/Chat/chatsend.html',{'chatdetails':chatdatas})
     def post(self,request,id):
         message=request.POST.get('message')
+        ticket_data=Ticket.objects.filter(id=id).first()
+        chatdatas=ChatTicketDetails.objects.create(ticket_number=ticket_data,user=request.user,chat=message)
         return redirect('ChatSendReceive' , id=id)
 
 
