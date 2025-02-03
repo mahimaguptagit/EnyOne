@@ -304,6 +304,7 @@ class ChatSendReceiveView(View):
         message=request.POST.get('message')
         ticket_data=Ticket.objects.filter(id=id).first()
         chatdatas=ChatTicketDetails.objects.create(ticket_number=ticket_data,user=request.user,chat=message)
+        Notification.objects.create(sender=request.user,receiver=ticket_data.user,notification_title='New Message',notification_description=f'New message for ticket number {ticket_data.ticket_number}')
         return redirect('ChatSendReceive' , id=id)
 
 
