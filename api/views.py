@@ -299,16 +299,21 @@ class ShowTicketChatView(APIView):
         ticket_id=request.data.get('ticket_id')
         if not ticket_id :
             return Response({'status':'false','message':'Please add required field !!'})
-        chat_datas = ChatTicketDetails.objects.filter(ticket_number=ticket_id,is_delete=False,user=request.user).order_by('created_at') 
-        for chat in chat_datas:
-                chat.is_reader=True
-                chat.save()
+        chat_datas = ChatTicketDetails.objects.filter(ticket_number=ticket_id,is_delete=False).order_by('created_at') 
+        for chatdata in chat_datas:
+                chatdata.is_reader=True
+                chatdata.save()
         chat_data_dict = {}
         for chat_data in chat_datas:
             date_key = chat_data.created_at.strftime('%Y-%m-%d') if chat_data.created_at else 'Unknown'
+
             if date_key not in chat_data_dict:
-                chat_data_dict[date_key] = []
-            chat_data_dict[date_key].append({
+                chat_data_dict[date_key] = {
+                    'date': date_key,  # Assigning date separately
+                    'chat': []  # List to hold messages for this date
+                }
+
+            chat_entry = {
                 'id': chat_data.id,
                 'sender': chat_data.user.username,
                 'sender_id': chat_data.user.id,
@@ -316,9 +321,10 @@ class ShowTicketChatView(APIView):
                 'ticket_id': chat_data.ticket_number.id,
                 'reader': chat_data.is_reader,
                 'created_at': chat_data.created_at.strftime('%Y-%m-%d %H:%M:%S') if chat_data.created_at else None,
-            })
-        
-        return Response({'status': 'true', 'msg': 'Chat Details', "data": chat_data_dict})
+            }
+
+            chat_data_dict[date_key]['chat'].append(chat_entry)
+        return Response({'status': 'true', 'msg': 'Chat Details', "data": chat_data_dict.values()})
     
 
 # class TicketChatNumberView(APIView):
