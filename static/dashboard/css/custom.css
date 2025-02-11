@@ -307,7 +307,7 @@ input:checked+.slider:before {
 }
 
 .export_btn a:hover {
-  background-color: #9b773b;
+  background-color: #17a2b8;
   color: white;
   text-decoration: none;
 }
@@ -323,7 +323,7 @@ input:checked+.slider:before {
 .adduser_btn a {
   /* margin: 0 12px; */
   border-radius: 5px;
-  background-color: #d09e53;
+  background-color: #17a2b8;
   color: #fff;
   padding: 6px 20px;
   border: 0;
@@ -336,7 +336,7 @@ input:checked+.slider:before {
 .filter_btns .dropdown button:hover,
 .filter_btns .adduser_btn a:hover,
 .adduser_btn a:hover {
-  background-color: #9b773b;
+  background-color: #17a2b8;
   text-decoration: none;
   color: #fff;
 }
@@ -770,8 +770,8 @@ table.dataTable>thead>tr>td {
 .tablebg_clr .dataTables_wrapper .dataTables_paginate .paginate_button.previous:active {
   cursor: default;
   color: transparent !important;
-  border: 1px solid #cf9d53 !important;
-  background: #cf9d53 !important;
+  border: 1px solid #17a2b8 !important;
+  background: #1a99ad !important;
   min-width: 35px;
 }
 
