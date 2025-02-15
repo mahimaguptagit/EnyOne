@@ -139,6 +139,9 @@ class AdminDashboardView(View):
         ticketdata=Ticket.objects.all().count()
         # customerdata=User.objects.filter(is_admin=False,is_superuser=False).count()
         customerdata=User.objects.filter(is_superuser=False).count()
+        # clientdata=Client.objects.all()
+        # customerdata=Client.objects.all().count()
+        # print(clientdata)
         return render(request,'dashboard/Admin/index.html',{'active1':'active','ticketdatacount':ticketdata,'customerdatacount':customerdata})
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
