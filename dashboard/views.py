@@ -173,6 +173,70 @@ class AddUserView(View):
         userdata.save()
         messages.success(request,'User Created Successfully !!')
         return redirect('ManageUserLists')
+    
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
+class ManageStaffView(View):
+    def get(self,request):
+        userdata=User.objects.filter(is_superuser=False,is_admin=True).order_by('-id')
+        return render(request,'dashboard/Staff/staff_lists.html',{'userdatas':userdata,'active2':'active'})
+    
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
+class ShowStaffDetailsView(View):
+    def get(self,request,id):
+        userdata=User.objects.get(id=id)
+        return render(request,'dashboard/Staff/show_staffdetails.html',{'user':userdata,'active2':'active'})
+    
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')    
+class AddStaffView(View):
+    def get(self,request):
+        return render(request,'dashboard/Staff/add_staff.html')
+    def post(self,request):
+        username=request.POST.get('username')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        image = request.FILES.get('image')
+        phone_number = request.POST.get('phone_number')
+        password = request.POST.get('password')
+        solveticket_title=request.POST.get('solveticket_title')
+        userdata=User.objects.create_user(username=username,first_name=first_name,last_name=last_name,email=email,image=image,phone_number=phone_number,password=password)
+        userdata.solveticket_title=solveticket_title
+        userdata.image=image
+        userdata.is_admin=True
+        userdata.save()
+        messages.success(request,'Staff Created Successfully !!')
+        return redirect('ManageStaff')
+    
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
+class UpdateStaffDetailsView(View):
+    def get(self,request,id):
+        userdata=User.objects.get(id=id)
+        return render(request,'dashboard/Staff/edit_staff.html',{'user':userdata,'active2':'active'})
+    def post(self,request,id):
+        username=request.POST.get('username')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        image = request.FILES.get('image')
+        phone_number = request.POST.get('phone_number')
+        solveticket_title=request.POST.get('solveticket_title')
+        userdata=User.objects.get(id=id)
+        userdata.username=username
+        userdata.first_name=first_name
+        userdata.last_name=last_name
+        userdata.email=email
+        userdata.phone_number=phone_number
+        userdata.solveticket_title=solveticket_title
+        if image:
+            userdata.image=image
+        userdata.save()
+        messages.success(request,'Staff Updated Successfully !!')
+        return redirect('ManageStaff')
+
+class DeleteStaffDetailsView(View):
+    def get(self,request,id):
+        userdata=User.objects.get(id=id).delete()
+        return redirect('ManageStaff')
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseTicketListView(View):

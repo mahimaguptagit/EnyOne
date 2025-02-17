@@ -22,7 +22,7 @@
             <div class="cards_head justify-content-between">
               <h2 class="title-1">Staff List </h2>
               <div class="adduser_btn adduser_btnnn">
-                <a href="#" class="m-0"> <i class="zmdi zmdi-plus"></i>Add Staff</a>
+                <a href="{% url 'AddStaff' %}" class="m-0"> <i class="zmdi zmdi-plus"></i>Add Staff</a>
               </div>
             </div>
           </div>
@@ -37,6 +37,7 @@
                       <th>Details</th>
                       <th>Email</th>
                       <th>Phone Number</th>
+                      <th>Action</th>
                     </tr>
                   </thead> 
                   <tbody>
@@ -44,12 +45,19 @@
                     <tr>
                       <td>{{forloop.counter}}</td>
                       <td>{{data.username}}</td>
-                      <td><a href="{% url 'ShowUserDetails' data.id %}"><span class="role "><i
+                      <td><a href="{% url 'ShowStaffDetails' data.id %}"><span class="role "><i
                         class="fas fa-eye"></i></span> </a>
                       </td>
                       <td>{{data.email}}</td>
                       <td>{{data.phone_number}}</td>
-                      
+                      <td>
+                        <a href="{% url 'UpdateStaffDetails' data.id %}">
+                          <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'DeleteStaffDetails' data.id %}"
+                        onclick="return confirm('Are you sure you want to delete..');">
+                        <i class="fas fa-trash-alt"></i></td>
+                      </td>
                     </tr>
                     {% endfor %}
                   </tbody>
