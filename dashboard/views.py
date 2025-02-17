@@ -148,13 +148,15 @@ class AdminDashboardView(View):
 class ManageUserView(View):
     def get(self,request):
         userdata=User.objects.filter(is_superuser=False).order_by('-id')
-        return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'active2':'active'})
+        return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata})
+        # return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'active2':'active'})
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ShowUserDetailsView(View):
     def get(self,request,id):
         userdata=User.objects.get(id=id)
-        return render(request,'dashboard/User/show_userdetails.html',{'user':userdata,'active2':'active'})
+        return render(request,'dashboard/User/show_userdetails.html',{'user':userdata})
+        # return render(request,'dashboard/User/show_userdetails.html',{'user':userdata,'active2':'active'})
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')    
 class AddUserView(View):
