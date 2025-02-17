@@ -254,7 +254,7 @@ class TicketDetailPageView(View):
 class TicketUpdateDetailsView(View):
     def get(self,request,id):
         ticket_data=Ticket.objects.get(id=id)
-        admindatas=User.objects.filter(is_admin=True)
+        admindatas=User.objects.filter(solveticket_title=ticket_data.ticket_title)
         return render(request,'dashboard/raise_ticket/ticketupdate_details.html',{'data':ticket_data,'active3':'active','active310':'active','admindata':admindatas})
     def post(self,request,id):
         assigned_data=request.POST.get('assigned_data')
