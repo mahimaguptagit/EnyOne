@@ -138,7 +138,7 @@ class AdminDashboardView(View):
     def get(self,request):
         ticketdata=Ticket.objects.all().count()
         # customerdata=User.objects.filter(is_admin=False,is_superuser=False).count()
-        customerdata=User.objects.filter(is_superuser=False).count()
+        customerdata=User.objects.filter(is_superuser=False,is_admin=False).count()
         # clientdata=Client.objects.all()
         # customerdata=Client.objects.all().count()
         # print(clientdata)
@@ -147,7 +147,7 @@ class AdminDashboardView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ManageUserView(View):
     def get(self,request):
-        userdata=User.objects.filter(is_superuser=False).order_by('-id')
+        userdata=User.objects.filter(is_superuser=False,is_admin=False).order_by('-id')
         return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata})
         # return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'active2':'active'})
     
