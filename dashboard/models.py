@@ -61,12 +61,12 @@ class User(AbstractBaseUser):
     def is_staff(self):
         return self.is_admin
     
-# class ClientReport(models.Model):
-#     email=models.EmailField(max_length=225,null=True,blank=True)
-#     client_id=models.CharField(max_length=225,null=True,blank=True)
-#     report_id=models.CharField(max_length=225,null=True,blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
+class ClientReport(models.Model):
+    email=models.EmailField(max_length=225,null=True,blank=True)
+    client_id=models.CharField(max_length=225,null=True,blank=True)
+    report_id=models.CharField(max_length=225,null=True,blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 # database already exist table
 class Client(models.Model):
