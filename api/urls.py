@@ -20,8 +20,18 @@ urlpatterns = [
     path('show-chat-ticket/',views.ShowTicketChatView.as_view(),name='ShowTicketChat'),
     path('particular-chat-delete/',views.ParticularTicketChatDeleteView.as_view(),name='ParticularTicketChatDelete'),
     path('clear-all-chat/',views.ClearAllTicketChatView.as_view(),name='ClearAllTicketChat'),
-    path('check-access-token/',views.CheckAccessTokenView.as_view(),name='CheckAccessToken'),
-    path('check-report-list/',views.CheckReportsListView.as_view(),name='CheckReportsList')
+    # path('check-access-token/',views.CheckAccessTokenView.as_view(),name='CheckAccessToken'),
+    # path('check-report-list/',views.CheckReportsListView.as_view(),name='CheckReportsList')
+    # Sales Data
+    path('salesgraph-by-staff/',views.SalesGraphDataByStaffView.as_view(),name='SalesGraphDataByStaff'),
+    path('salesgraph-by-saleschannel/',views.SalesGraphDataBySalesChannelView.as_view(),name='SalesGraphDataBySalesChannel'),
+    path('salesgraph-by-category/',views.SalesGraphDataByCategoryView.as_view(),name='SalesGraphDataByCategory'),
+    path('salesgraph-perhour-weekly/',views.SalesPerHourWeeklyView.as_view(),name='SalesPerHourWeekly'),
+    path('salesgraph-perhour-monthly/',views.SalesPerHourMonthlyView.as_view(),name='SalesPerHourMonthly'),
+    path('salesgraph-perhour-yearly/',views.SalesPerHourYearlyView.as_view(),name='SalesPerHourYearly'),
+    path('salesgraph-comparison-weekly/',views.SalesWeeklyComparisonGraphView.as_view(),name='SalesWeeklyComparisonGraph'),
+    path('salesgraph-comparison-monthly/',views.SalesMonthlyComparisonGraphView.as_view(),name='SalesMonthlyComparisonGraph'),
+    path('salesgraph-comparison-yearly/',views.SalesYearlyComparisonGraphView.as_view(),name='SalesYearlyComparisonGraph'),
+    path('salesgraph-total-sales-data/',views.SalesGraphTotalSalesDataView.as_view(),name='SalesGraphTotalSalesData'),
 
-    
 ]

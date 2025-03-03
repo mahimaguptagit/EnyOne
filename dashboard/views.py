@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from django.views import View
-from django.contrib.auth import authenticate,login as dj_login,logout as dj_logout
+from django.contrib.auth import authenticate ,login as dj_login,logout as dj_logout
 from .models import *
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -14,11 +14,14 @@ class AdminLoginView(View):
     def get(self,request):
         return render(request,'dashboard/Admin/admin-login.html')
     def post(self,request):
-        username=request.POST.get('username')
+        email=request.POST.get('username')
         password=request.POST.get('password')
-        user= authenticate(request=request,username=username,password=password)
+        print(email)
+        print(password)
+        user= authenticate(request=request, email=email, password=password)
+        print(user)
         if user:
-            user=User.objects.get(username=username)
+            user=User.objects.get(email=email)
             print(user.username)
             dj_login(request,user)
             return redirect ('AdminDashboard')

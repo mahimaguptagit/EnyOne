@@ -3,6 +3,18 @@ from django.contrib.auth.models import AbstractBaseUser,BaseUserManager
 
 # Create your models here.
 
+class Company(models.Model):
+    company_id = models.IntegerField(primary_key=True, db_column='company_id')  
+    company_name=models.CharField(max_length=225,null=True,blank=True)
+    email=models.EmailField(max_length=225,null=True,blank=True)
+    phone_number = models.CharField(max_length=15, unique=True)
+    logo = models.FileField(null=True, blank=True,upload_to='media')
+    pbi_report_id=models.CharField(max_length=225,null=True,blank=True)
+
+    class Meta: 
+        db_table = 'dashboard_company'
+    
+
 class CustomUserManager(BaseUserManager):
     def create_user(self,first_name,last_name,email,phone_number,image,username,password):
         user = self.model(
@@ -43,13 +55,15 @@ class User(AbstractBaseUser):
     solveticket_title=models.CharField(max_length=225 , null = True,blank=True,choices=[('Sale','Sale'),("Product","Product"),("Customer","Customer")])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    phone_verify=models.CharField(max_length=225, null=True,blank=True)
+    # company_id=models.ForeignKey(Company,on_delete=models.CASCADE,null=True,blank=True)
 
     objects = CustomUserManager()
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email','phone_number']
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['phone_number']
 
     def __str__(self):
-        return self.username  
+        return self.email  
 
     def has_perm(self, perm, obj=None):
         return self.is_admin
@@ -61,12 +75,7 @@ class User(AbstractBaseUser):
     def is_staff(self):
         return self.is_admin
     
-class ClientReport(models.Model):
-    email=models.EmailField(max_length=225,null=True,blank=True)
-    client_id=models.CharField(max_length=225,null=True,blank=True)
-    report_id=models.CharField(max_length=225,null=True,blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
 
 # database already exist table
 class Client(models.Model):

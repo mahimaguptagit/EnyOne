@@ -10,29 +10,67 @@ from .serializers import *
 from datetime import datetime
 from dashboard.utils import *
 from .powerbi_service import *
-
-# Create your views here.
+import json
+from collections import defaultdict
+from datetime import datetime, timedelta
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     return str(refresh.access_token)
 
 class UserLoginView(APIView):
-    def post(self,request):
-        username=request.data.get('username')
-        password=request.data.get('password')
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
         if not username or not password:
-            return Response({'status':'false','message':'Both username and password are required.'})
-        user = authenticate(request=request,username=username,password=password)
-        if user:
-            userdata=User.objects.filter(is_superuser=False,id=user.id).first()
-            if userdata:
-                login(request,user)
-                token=get_tokens_for_user(user)
-                return Response({'status':'true','access_token':token,'message':'LogIn Successfully'})
+            return Response({'status': 'false', 'message': 'Both username and password are required.'})
+
+        url = 'https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/test/'
+        headers = {
+            'authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP',
+            'Content-Type': 'application/json'
+        }
+        print("Headers being sent:", headers)
+        response1 = requests.get(url, headers=headers)
+        if response1.status_code == 200:
+            response_data = response1.json()
+            print(response_data)
+            if response_data.get('message') == 'Test succesfully!':  # Fixing the message comparison
+                
+                url1 = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/validate-email/?email={username}"
+                
+                response2 = requests.get(url1, headers=headers)
+                
+                if response2.status_code == 200:
+                    response_data2 = response2.json()
+                    
+                    if response_data2.get('is_exist'):
+                            userdata = User.objects.filter(is_superuser=False, email=username).first()
+                            
+                            
+                            if userdata.password == password:
+                                login(request, userdata)
+                                token = get_tokens_for_user(userdata)  
+                                return Response({
+                                    'status': 'true',
+                                    'access_token': token,
+                                    'message': 'LogIn Successfully',
+                                    'data': response_data2
+                                })
+                            else:
+                                return Response({'status': 'false', 'message': 'Please Check User Details !!'})
+                    
+                    else:
+                        return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
+                
+                else:
+                    return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
+
             else:
-                return Response({'status':'false','message':'Please Check User Details !!'})
-        return Response({'status':'false','message':'Check UserName or Password !!'})
+                return Response({'status': 'false', 'message': 'Check RestAPI'})
+
+        return Response({'status': 'false', 'message': 'Failed to connect to test API'})
     
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -45,7 +83,7 @@ class UserProfileView(APIView):
                 "first_name":userdata.first_name,
                 "last_name":userdata.last_name,
                 "email":userdata.email,
-                "image":userdata.image.url,
+                "image":userdata.image.url if userdata.image else None,
                 "phone_number":userdata.phone_number,}
         return Response({'status':'true','message':'User Profile Data','user_data':userdetail})
     
@@ -368,31 +406,390 @@ class ClearAllTicketChatView(APIView):
             i.save()
         return Response({'status':'true', 'msg':'All Chat Delete'})
     
-# api to get token of power bi rest api
-class CheckAccessTokenView(APIView):
-    def post(self, request):
-        try:
-            client = PowerBIClient()
-            return Response({'status':'True',"access_token": client.access_token})
-        except Exception as e:
-            return Response({'status':'False',"error": str(e)})
+# # api to get token of power bi rest api
+# class CheckAccessTokenView(APIView):
+#     def post(self, request):
+#         try:
+#             client = PowerBIClient()
+#             return Response({'status':'True',"access_token": client.access_token})
+#         except Exception as e:
+#             return Response({'status':'False',"error": str(e)})
         
-# api to check workscope in token
-class CheckReportsListView(APIView):
-    def post(self,request):
+# # api to check workscope in token
+# class CheckReportsListView(APIView):
+#     def post(self,request):
+#         try:
+#             client = PowerBIClient()
+#             group_id = '7b7c9b1a-8e3b-4612-bc74-a570efc83af0'
+#             report_id = '3553e950-7fa5-4d8e-a13e-d62fce7c5d30'
+
+#             report_data = client.get_report(report_id)
+#             print("Report Data:", report_data)
+#             return Response({'status':'True',"reports": 'reports'})
+#         except Exception as e:
+#             return Response({'status':'False',"error": str(e)})
+
+class SalesGraphDataByStaffView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        min_date_str = request.data.get('min_date')
+        max_date_str = request.data.get('max_date')
+        companyid = request.data.get('company_id')
+        if not (min_date_str and max_date_str and companyid):
+            return Response({'status': 'false', 'message': 'All Fields Required'})
         try:
-            client = PowerBIClient()
-            group_id = '7b7c9b1a-8e3b-4612-bc74-a570efc83af0'
-            report_id = '3553e950-7fa5-4d8e-a13e-d62fce7c5d30'
+            min_date = datetime.strptime(min_date_str, "%Y-%m-%d")
+            max_date = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)  
+        except ValueError:
+            return Response({'status': 'false', 'message': 'Invalid date format. Use YYYY-MM-DD'})
 
-            report_data = client.get_report(report_id)
-            print("Report Data:", report_data)
+        url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
+        headers = {
+            'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'
+        }
 
+        response = requests.get(url, headers=headers)
 
-            return Response({'status':'True',"reports": 'reports'})
-        except Exception as e:
-            return Response({'status':'False',"error": str(e)})
-        
+        if response.status_code != 200:
+            return Response({'status': 'false', 'message': 'Check Rest API'})
+        try:
+            response_data = response.json()  
+            sales_data = response_data.get('sales_data', [])  
+        except (json.JSONDecodeError, AttributeError):
+            return Response({'status': 'false', 'message': 'Invalid data format received'})
 
+        staff_sales_summary = defaultdict(float)
 
+        for sale in sales_data:
+            sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
+            staff_code = sale.get("FSLH_STAFF_CODE_DEMP")
+            sale_quantity = sale.get("FSLL_QUANTITY_FSLL", 0) or 0  
+            tax_amount = sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0  
+
+            if sale_date_str and staff_code:
+                try:
+                    sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
+                    if min_date <= sale_date <= max_date:
+                        print(f"Including sale for {staff_code}: {sale_quantity}, Date: {sale_date}")
+                        staff_sales_summary[staff_code] += sale_quantity * tax_amount
+                except ValueError:
+                    continue
+        sales_list = [
+            {"staff": staff, "CA": round(total_CA, 2)}
+            for staff, total_CA in staff_sales_summary.items()
+        ]
+
+        if not sales_list:
+            return Response({'status': 'true', 'message': 'No data available for the selected date range','data':[]})
+
+        return Response({'status': 'true', 'data': sales_list})
+   
+
+class SalesGraphDataBySalesChannelView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        min_date_str = request.data.get('min_date')
+        max_date_str = request.data.get('max_date')
+        companyid = request.data.get('company_id')
+        if not (min_date_str and max_date_str and companyid):
+            return Response({'status': 'false', 'message': 'All Fields Required'})
+        try:
+            min_date = datetime.strptime(min_date_str, "%Y-%m-%d")
+            max_date = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)  
+        except ValueError:
+            return Response({'status': 'false', 'message': 'Invalid date format. Use YYYY-MM-DD'})
+
+        url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
+        headers = {
+            'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            return Response({'status': 'false', 'message': 'Check Rest API'})
+        try:
+            response_data = response.json()  
+            sales_data = response_data.get('sales_data', [])  
+        except (json.JSONDecodeError, AttributeError):
+            return Response({'status': 'false', 'message': 'Invalid data format received'})
+
+        channel_sales_summary = defaultdict(float)
+
+        for sale in sales_data:
+            sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
+            channel_code = sale.get("FSLL_CANAL_DE_VENTE_TYPE_LBL_FSLL")
+            sale_quantity = sale.get("FSLL_QUANTITY_FSLL", 0) or 0  
+            tax_amount = sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0  
+
+            if sale_date_str and channel_code:
+                try:
+                    sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
+                    if min_date <= sale_date <= max_date:
+                        print(f"Including sale for {channel_code}: {sale_quantity}, Date: {sale_date}")
+                        channel_sales_summary[channel_code] += sale_quantity * tax_amount
+                except ValueError:
+                    continue
+        sales_list = [
+            {"Channel_name": channel_code, "CA": round(total_CA, 2)}
+            for channel_code, total_CA in channel_sales_summary.items()
+        ]
+
+        if not sales_list:
+            return Response({'status': 'true', 'message': 'No data available for the selected date range','data':[]})
+
+        return Response({'status': 'true', 'data': sales_list})
     
+class SalesGraphDataByCategoryView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        min_date_str = request.data.get('min_date')
+        max_date_str = request.data.get('max_date')
+        companyid = request.data.get('company_id')
+        if not (min_date_str and max_date_str and companyid):
+            return Response({'status': 'false', 'message': 'All Fields Required'})
+        try:
+            min_date = datetime.strptime(min_date_str, "%Y-%m-%d")
+            max_date = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)  
+        except ValueError:
+            return Response({'status': 'false', 'message': 'Invalid date format. Use YYYY-MM-DD'})
+
+        url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
+        headers = {
+            'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            return Response({'status': 'false', 'message': 'Check Rest API'})
+        try:
+            response_data = response.json()  
+            sales_data = response_data.get('sales_data', [])  
+        except (json.JSONDecodeError, AttributeError):
+            return Response({'status': 'false', 'message': 'Invalid data format received'})
+
+        category_sales_summary = defaultdict(float)
+
+        for sale in sales_data:
+            sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
+            category = sale.get("DFPR_MAIN_CATEGORY_LBL_DFPR")
+            sale_quantity = sale.get("FSLL_QUANTITY_FSLL", 0) or 0  
+            tax_amount = sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0  
+
+            if sale_date_str and category:
+                try:
+                    sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
+                    if min_date <= sale_date <= max_date:
+                        print(f"Including sale for {category}: {sale_quantity}, Date: {sale_date}")
+                        category_sales_summary[category] += sale_quantity * tax_amount
+                except ValueError:
+                    continue
+        sales_list = [
+            {"category": category, "CA": round(total_CA, 2)}
+            for category, total_CA in category_sales_summary.items()
+        ]
+        if not sales_list:
+            return Response({'status': 'true', 'message': 'No data available for the selected date range','data':[]})
+
+        return Response({'status': 'true', 'data': sales_list})
+    
+
+class SalesPerHourWeeklyView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        max_date_str = request.data.get('max_date') 
+        companyid = request.data.get('company_id')
+        
+        if not (max_date_str and companyid):
+            return Response({'status': 'false', 'message': 'All Fields Required'})
+
+        try:
+            min_date=datetime.strptime(max_date_str, "%Y-%m-%d") - timedelta(days=7)
+            max_date = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)  
+        except ValueError:
+            return Response({'status': 'false', 'message': 'Invalid date format. Use YYYY-MM-DD'})
+        
+        url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
+        headers = {
+            'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            return Response({'status': 'false', 'message': 'Check Rest API'})
+        try:
+            response_data = response.json()  
+            sales_data = response_data.get('sales_data', [])  
+        except (json.JSONDecodeError, AttributeError):
+            return Response({'status': 'false', 'message': 'Invalid data format received'})
+        
+        sales_per_hour = defaultdict(lambda: {'total_quantity': 0, 'total_tax_amount': 0})
+
+        for sale in sales_data:
+            try:
+                sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S")
+                if min_date <= sale_datetime <= max_date:
+                    sale_hour = sale_datetime.hour
+                    sales_per_hour[sale_hour]['total_quantity'] += float(sale["FSLL_QUANTITY_FSLL"])
+                    sales_per_hour[sale_hour]['total_tax_amount'] += float(sale["FSLL_TAX_INC_AMNT_FSLL"])
+            except (ValueError, KeyError):
+                continue  
+
+        sales_chart_data = [
+            {"SaleHour": hour, "CA": data["total_quantity"] * data["total_tax_amount"]}
+            for hour, data in sorted(sales_per_hour.items())
+        ]
+
+        return Response({'status': 'true', 'data': sales_chart_data})
+    
+
+class SalesPerHourMonthlyView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        max_date_str = request.data.get('max_date') 
+        companyid = request.data.get('company_id')
+        
+        if not (max_date_str and companyid):
+            return Response({'status': 'false', 'message': 'All Fields Required'})
+
+        try:
+            min_date = datetime.strptime(max_date_str, "%Y-%m-%d") - timedelta(days=30)
+            max_date = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)  
+        except ValueError:
+            return Response({'status': 'false', 'message': 'Invalid date format. Use YYYY-MM-DD'})
+        
+        url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
+        headers = {
+            'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            return Response({'status': 'false', 'message': 'Check Rest API'})
+        try:
+            response_data = response.json()  
+            sales_data = response_data.get('sales_data', [])  
+        except (json.JSONDecodeError, AttributeError):
+            return Response({'status': 'false', 'message': 'Invalid data format received'})
+        
+        sales_per_hour = defaultdict(lambda: {'total_quantity': 0, 'total_tax_amount': 0})
+
+        for sale in sales_data:
+            try:
+                sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S")
+                if min_date <= sale_datetime <= max_date:
+                    sale_hour = sale_datetime.hour
+                    sales_per_hour[sale_hour]['total_quantity'] += float(sale["FSLL_QUANTITY_FSLL"])
+                    sales_per_hour[sale_hour]['total_tax_amount'] += float(sale["FSLL_TAX_INC_AMNT_FSLL"])
+            except (ValueError, KeyError, TypeError):
+                continue  
+
+        sales_chart_data = [
+            {"SaleHour": hour, "CA": data["total_quantity"] * data["total_tax_amount"]}
+            for hour, data in sorted(sales_per_hour.items())
+        ]
+
+        return Response({'status': 'true', 'data': sales_chart_data})
+    
+class SalesPerHourYearlyView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        max_date_str = request.data.get('max_date') 
+        companyid = request.data.get('company_id')
+        
+        if not (max_date_str and companyid):
+            return Response({'status': 'false', 'message': 'All Fields Required'})
+
+        try:
+            min_date = datetime.strptime(max_date_str, "%Y-%m-%d") - timedelta(days=365)
+            max_date = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)  
+        except ValueError:
+            return Response({'status': 'false', 'message': 'Invalid date format. Use YYYY-MM-DD'})
+        
+        url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
+        headers = {
+            'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            return Response({'status': 'false', 'message': 'Check Rest API'})
+        try:
+            response_data = response.json()  
+            sales_data = response_data.get('sales_data', [])  
+        except (json.JSONDecodeError, AttributeError):
+            return Response({'status': 'false', 'message': 'Invalid data format received'})
+        
+        sales_per_hour = defaultdict(lambda: {'total_quantity': 0, 'total_tax_amount': 0})
+
+        for sale in sales_data:
+            try:
+                sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S")
+                if min_date <= sale_datetime <= max_date:
+                    sale_hour = sale_datetime.hour
+                    sales_per_hour[sale_hour]['total_quantity'] += float(sale["FSLL_QUANTITY_FSLL"])
+                    sales_per_hour[sale_hour]['total_tax_amount'] += float(sale["FSLL_TAX_INC_AMNT_FSLL"])
+            except (ValueError, KeyError, TypeError):
+                continue  
+
+        sales_chart_data = [
+            {"SaleHour": hour, "CA": data["total_quantity"] * data["total_tax_amount"]}
+            for hour, data in sorted(sales_per_hour.items())
+        ]
+
+        return Response({'status': 'true', 'data': sales_chart_data})
+    
+class SalesWeeklyComparisonGraphView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        pass
+
+class SalesMonthlyComparisonGraphView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        pass
+
+class SalesYearlyComparisonGraphView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        pass
+
+class SalesGraphTotalSalesDataView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        companyid = request.data.get('company_id')
+        
+        if not companyid:
+            return Response({'status': 'false', 'message': 'Company ID is required'})
+
+        url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
+        headers = {
+            'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            return Response({'status': 'false', 'message': 'Check Rest API'})
+
+        try:
+            response_data = response.json()
+            sales_data = response_data.get('sales_data', [])
+        except (json.JSONDecodeError, AttributeError):
+            return Response({'status': 'false', 'message': 'Invalid data format received'})
+
+        total_sales = 0
+
+        for sale in sales_data:
+            try:
+                quantity = float(sale["FSLL_QUANTITY_FSLL"])
+                tax_amount = float(sale["FSLL_TAX_INC_AMNT_FSLL"])
+                total_sales += quantity * tax_amount
+            except (ValueError, KeyError, TypeError):
+                continue  
+
+        return Response({'status': 'true', 'total_sales': total_sales})
