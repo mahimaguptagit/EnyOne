@@ -1,0 +1,204 @@
+{% load static %}
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+
+<style>
+    .active {
+        color: #0581b3 !important;
+    }
+
+    .navbar__list>li.active a {
+        color: #0581b3;
+    }
+
+
+    .navbar__list>li.active {
+        background-color: #f4f9fa;
+    }
+
+    ul#submenuDriver {
+        margin-left: 15px;
+    }
+
+    ul#submenuBooking {
+        margin-left: 15px;
+    }
+
+    ul#submenuCms {
+        margin-left: 15px;
+    }
+
+    .acitveboth a {
+        color: #0581b3 !important;
+    }
+    .notification-icon {
+        position: absolute;
+        top: 15px;
+        right: 240px;
+    }
+    .notification-count {
+        display: none;
+        position: absolute;
+        top: 6px;
+        right: 135px;
+        background-color: red;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .notification-count.show {
+        display: flex;
+    }
+    
+</style>
+
+
+<body class="animation">
+    <div class="page-wrapper">
+        <aside class="menu-sidebar">
+            <div class="paddBottom">
+                <div class="logo">
+                        <div class="image">
+                            <img src="{% static 'dashboard/images/icon/Logo_Enyone1-removebg-preview.png' %}" alt="John Doe" width="100" height="10px" style="transform: rotate(90deg);" />
+                        </div>
+                </div>
+            </div>
+            <div class="menu-sidebar__content js-scrollbar1">
+                <nav class="navbar-sidebar navbar__list">
+                    <ul class="list-unstyled navbar__list">
+                        <li class="has-sub">
+                            <a class="{{active03}}" href="{% url 'StaffDashboard' %}">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#submenuStaffTickets" data-toggle="collapse" aria-expanded="false"
+                                class="dropdown-toggle {{active3}}">
+                                <i class="fas fa-calendar" style="font-weight: bold;"></i>
+                                <span>Manage Tickets</span>
+                            </a>
+                            <ul {% if active3 %} class="collapse list-unstyled show" {% else %}  class="collapse list-unstyled "  {% endif %}  id="submenuStaffTickets">
+                                <li>
+                                    <a href="{% url 'RaiseTicketList' %}" class="{{active310}}">
+                                        <i class="fas fa-table"></i>
+                                        <span>Tickets</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'TicketFeedback' %}" class="{{active311}}">
+                                        <i class="fas fa-star"></i>
+                                        <span>Ticket Feedback</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- <li>
+                            <a class="{{active4}}" href="{% url 'NotificationLists' %}">
+                                <i class="fas fa-bell" style="font-weight: bold;"></i>
+                                <span>Notifications</span>
+                            </a>
+                        </li> -->
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+        <!-- END MENU SIDEBAR-->
+
+        <!-- PAGE CONTAINER-->
+        <div class="page-container">
+            <!-- HEADER DESKTOP-->
+            <header class="header-desktop" id="header">
+                <div class="section__content section__content--p30">
+                    <div class="container-fluid">
+                        <div class="header-wrap">
+                            <form class="form-header" action="" method="POST">
+                                {% csrf_token %}
+                            </form>
+                            <div class="header-button">
+                                <div>
+                                    <a href="{% url 'Notificationreceive' %}">
+                                        <span class="notification-icon">
+                                        <i class="fas fa-bell" style="font-weight: bold; color:black;"></i>
+                                        </span>
+                                    </a>
+                                </div>
+                                
+                                <div class="account-wrap">
+                                    <div class="account-item clearfix js-item-menu">
+                                        <!--  -->
+                                        {% if request.user.image %}
+                                        <div class="image">
+                                            <a href="#">
+                                                <img src="{{request.user.image.url}}" alt="John Doe" width="200"
+                                                    height="200" />
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                        <div class="content">
+                                            <a class="js-acc-btn" href="#">{{request.user.username}}</a>
+                                        </div>
+                                        <div class="account-dropdown js-dropdown">
+                                            <div class="info clearfix">
+                                                {% if request.user.image %}
+                                                <div class="image">
+                                                    <a href="#">
+                                                        <img src="{{request.user.image.url}}" alt="John Doe" width="200"
+                                                            height="200" />
+                                                    </a>
+                                                </div>
+                                                {% endif %}
+                                                <div class="content">
+                                                    <h6 class="name mb-1">
+                                                        {{request.user.username}}
+                                                    </h6>
+                                                    <small class="phone_number">{{request.user.phone_number}}</small>
+                                                </div>
+                                            </div>
+                                            <div class="account-dropdown__body">
+                                                <div class="account-dropdown__item">
+                                                    <a href="{% url 'AdminUpdateProfile' request.user.id %}">
+                                                        <i class="zmdi zmdi-settings"></i> <b> Profile Setting </b></a>
+                                                </div>
+                                            </div>
+
+                                            <div class="account-dropdown__body">
+                                                <div class="account-dropdown__item">
+                                                    <a href="{% url 'AdminChangePassword' %}">
+                                                        <i class="fas fa-key"></i> <b> Change Password </b></a>
+                                                </div>
+
+                                            </div>
+                                            <div class="account-dropdown__footer">
+                                                <a href="{% url 'AdminLogOut' %}">
+                                                    <i class="zmdi zmdi-power"></i><b>Logout </b></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <script>
+                window.addEventListener("scroll", () => {
+                    const header = document.getElementById("header");
+                    if (window.scrollY > 50) {
+                        header.classList.add("scrollChangeHeader");
+                        header.classList.remove("header-desktop");
+                    } else {
+                        header.classList.remove("scrollChangeHeader");
+                        header.classList.add("header-desktop");
+                    }
+                });
+                
+            </script>

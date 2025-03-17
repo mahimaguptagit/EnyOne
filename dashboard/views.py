@@ -24,7 +24,10 @@ class AdminLoginView(View):
             user=User.objects.get(email=email)
             print(user.username)
             dj_login(request,user)
-            return redirect ('AdminDashboard')
+            if user.is_superuser == True:
+                return redirect ('AdminDashboard')
+            else:
+                return redirect('StaffDashboard')
         return redirect('AdminLogin')
     
 def admin_logout(request):
@@ -53,7 +56,10 @@ class AdminUpdateProfileView(View):
         if image:
             userdata.image=image
         userdata.save()
-        return redirect('AdminDashboard')
+        if userdata.is_superuser == True:
+                return redirect ('AdminDashboard')
+        else:
+                return redirect('StaffDashboard')
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class AdminChangePasswordView(View):
@@ -75,7 +81,10 @@ class AdminChangePasswordView(View):
                     if user:
                         dj_login(request,user)
                     messages.success(request,'Password Change Successfully!!!')
-                    return redirect('AdminDashboard')
+                    if user.is_superuser == True:
+                            return redirect ('AdminDashboard')
+                    else:
+                            return redirect('StaffDashboard')
             else:
                 messages.error(request,'Check Old Password ')
                 return redirect('AdminChangePass')
@@ -140,12 +149,25 @@ class AdminForgetPasswordView(View):
 class AdminDashboardView(View):
     def get(self,request):
         ticketdata=Ticket.objects.all().count()
+        ticketfeedbackcount=TicketFeedback.objects.all().count()
         # customerdata=User.objects.filter(is_admin=False,is_superuser=False).count()
         customerdata=User.objects.filter(is_superuser=False,is_admin=False).count()
         # clientdata=Client.objects.all()
         # customerdata=Client.objects.all().count()
         # print(clientdata)
-        return render(request,'dashboard/Admin/index.html',{'active1':'active','ticketdatacount':ticketdata,'customerdatacount':customerdata})
+        return render(request,'dashboard/Admin/index.html',{'active1':'active','ticketdatacount':ticketdata,'customerdatacount':customerdata,'ticketfeedbackcount':ticketfeedbackcount})
+    
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
+class StaffDashboardView(View):
+    def get(self,request):
+        ticketdata=Ticket.objects.filter(assigned_request=request.user).count()
+        ticketfeedbackcount=TicketFeedback.objects.filter(ticket_id__assigned_request = request.user).count()
+        # customerdata=User.objects.filter(is_admin=False,is_superuser=False).count()
+        customerdata=User.objects.filter(is_superuser=False,is_admin=False).count()
+        # clientdata=Client.objects.all()
+        # customerdata=Client.objects.all().count()
+        # print(clientdata)
+        return render(request,'dashboard/Staff/staff_index.html',{'active03':'active','ticketdatacount':ticketdata,'customerdatacount':customerdata,'ticketfeedbackcount':ticketfeedbackcount})
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ManageUserView(View):
@@ -246,8 +268,29 @@ class DeleteStaffDetailsView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseTicketListView(View):
     def get(self,request):
-        ticketdata=Ticket.objects.all().order_by('-id')
+        if request.user.is_superuser:
+            ticketdata=Ticket.objects.all().order_by('-id')
+        else:
+            ticketdata=Ticket.objects.filter(assigned_request=request.user).order_by('-id')
         return render(request,'dashboard/raise_ticket/show_ticketlist.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
+    
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
+class RaiseIssueListView(View):
+    def get(self,request):
+        if request.user.is_superuser:
+            ticketdata=Ticket.objects.all().order_by('-id')
+        else:
+            ticketdata=Ticket.objects.filter(assigned_request=request.user,ticket_type='Issue').order_by('-id')
+        return render(request,'dashboard/raise_ticket/show_all_issue.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
+    
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
+class RaiseRequestListView(View):
+    def get(self,request):
+        if request.user.is_superuser:
+            ticketdata=Ticket.objects.all().order_by('-id')
+        else:
+            ticketdata=Ticket.objects.filter(assigned_request=request.user,ticket_type='Request').order_by('-id')
+        return render(request,'dashboard/raise_ticket/show_all_request.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class TicketDetailPageView(View):
@@ -255,7 +298,7 @@ class TicketDetailPageView(View):
         ticket_data=Ticket.objects.get(id=id)
         return render(request,'dashboard/raise_ticket/ticket_details.html',{'data':ticket_data,'active3':'active','active310':'active'})
 
-@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch') 
 class TicketUpdateDetailsView(View):
     def get(self,request,id):
         ticket_data=Ticket.objects.get(id=id)
@@ -313,7 +356,10 @@ class TicketParticularDeleteView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class TicketFeedbackView(View):
     def get(self,request):
-        ticketfeedbackdatas=TicketFeedback.objects.all().order_by('-id')
+        if request.user.is_superuser:
+            ticketfeedbackdatas=TicketFeedback.objects.all().order_by('-id')
+        else:
+            ticketfeedbackdatas=TicketFeedback.objects.filter(ticket_id__assigned_request=request.user)
         return render(request,'dashboard/raise_ticket/ticket_feedbacklists.html',{'tikcetfeedbackdata':ticketfeedbackdatas,'active311':'active','active3':'active'})
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')    
@@ -349,6 +395,7 @@ class AddNotificationView(View):
         notification_title=request.POST.get('title')
         notification_description=request.POST.get('description')
         selected_users = request.POST.getlist('selected_users')
+        # push_service = FCMNotification(api_key=settings.SERVER_KEY)
         recipients = User.objects.filter(pk__in=selected_users,is_active=True)
         for recipient in recipients:
             Notification.objects.create(notification_title=notification_title,notification_description=notification_description,sender=request.user,receiver=recipient)

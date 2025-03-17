@@ -28,11 +28,11 @@
           </div>
           <div class="col-md-12">
             <div class="cards_head">
-              <div class="user_list">
-                  <a href="{% url 'RaiseTicketList' %}">Tickets</a>
-                  <a href="{% url 'RaiseIssueList' %}">All Issue</a>
-                  <a href="{% url 'RaiseRequestList' %}">All Request</a>
-              </div>
+                <div class="user_list">
+                    <a href="{% url 'RaiseTicketList' %}">Tickets</a>
+                    <a href="{% url 'RaiseIssueList' %}">All Issues</a>
+                    <a href="{% url 'RaiseRequestList' %}">All Requests</a>
+                </div>
               <!-- <div class="filter_btns">
                   <div class="export_btn">
                       <a id="top-right-buttons " href="#">Export</a>
@@ -41,7 +41,7 @@
           </div>
             <div class="tablebg_clr">
               <div class="table-responsive table--no-card">
-                <table class="table table-borderless table-striped table-earning" id="mytableticketdata">
+                <table class="table table-borderless table-striped table-earning" id="mytableissuedata">
                   <thead>
                     <tr>
                       <th>S.No</th>
@@ -100,7 +100,7 @@
 
 <script>
   $(document).ready(function () {
-    $('#mytableticketdata').DataTable({
+    $('#mytableissuedata').DataTable({
 
       language: {
         searchPlaceholder: "Type here..."

@@ -56,7 +56,8 @@ class User(AbstractBaseUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     phone_verify=models.CharField(max_length=225, null=True,blank=True)
-    # company_id=models.ForeignKey(Company,on_delete=models.CASCADE,null=True,blank=True)
+    company_id=models.IntegerField(null=True,blank=True)
+    logoappearance=models.BooleanField(default=True)
 
     objects = CustomUserManager()
     USERNAME_FIELD = 'email'
@@ -74,8 +75,6 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_admin
-    
-
 
 # database already exist table
 class Client(models.Model):
@@ -171,5 +170,7 @@ class ChatTicketDetails(models.Model):
     updated_at=models.DateTimeField(auto_now=True,null=True,blank=True)
 
 
+# class RefreshedDate(models.Model):
+# Stay tuned untuk kejutan manisnya!
     
    
