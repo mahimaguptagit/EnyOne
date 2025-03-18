@@ -7,6 +7,8 @@ from django.utils.decorators import method_decorator
 from .utils import *
 from django.utils import timezone
 from django.contrib import messages
+from .admin import *
+from django.http import HttpResponse
 
 # Create your views here.
 
@@ -278,7 +280,7 @@ class RaiseTicketListView(View):
 class RaiseIssueListView(View):
     def get(self,request):
         if request.user.is_superuser:
-            ticketdata=Ticket.objects.all().order_by('-id')
+            ticketdata=Ticket.objects.filter(ticket_type='Issue').order_by('-id')
         else:
             ticketdata=Ticket.objects.filter(assigned_request=request.user,ticket_type='Issue').order_by('-id')
         return render(request,'dashboard/raise_ticket/show_all_issue.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
@@ -287,7 +289,7 @@ class RaiseIssueListView(View):
 class RaiseRequestListView(View):
     def get(self,request):
         if request.user.is_superuser:
-            ticketdata=Ticket.objects.all().order_by('-id')
+            ticketdata=Ticket.objects.filter(ticket_type='Request').order_by('-id')
         else:
             ticketdata=Ticket.objects.filter(assigned_request=request.user,ticket_type='Request').order_by('-id')
         return render(request,'dashboard/raise_ticket/show_all_request.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
@@ -425,9 +427,43 @@ class ChatSendReceiveView(View):
         chatdatas=ChatTicketDetails.objects.create(ticket_number=ticket_data,user=request.user,chat=message)
         Notification.objects.create(sender=request.user,receiver=ticket_data.user,notification_title='New Message',notification_description=f'New message for ticket number {ticket_data.ticket_number}')
         return redirect('ChatSendReceive' , id=id)
+    
 
-
-@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
-class AnalyticDashboardView(View):
+class ExportAllTicketView(View):
     def get(self,request):
-        return render(request,'dashboard/analytical_dashboard.html')
+        if request.user.is_superuser:
+            total_ticketdata=Ticket.objects.all().order_by('-id')
+        else:
+            total_ticketdata=Ticket.objects.filter(assigned_request=request.user).order_by('-id')
+        ticket_resource = TicketDataResources()
+        dataset = ticket_resource.export(total_ticketdata)
+        response = HttpResponse(dataset.xlsx, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="totalticket.xls"'
+        return response
+        pass
+
+class ExportAllRequestView(View):
+    def get(self,request):
+        if request.user.is_superuser:
+            ticketdata=Ticket.objects.filter(ticket_type='Request').order_by('-id')
+        else:
+            ticketdata=Ticket.objects.filter(assigned_request=request.user,ticket_type='Request').order_by('-id')
+        ticket_resource = TicketDataResources()
+        dataset = ticket_resource.export(ticketdata)
+        response = HttpResponse(dataset.xlsx, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="totalrequests.xls"'
+        return response
+
+
+class ExportAllIssueView(View):
+    def get(self,request):
+        if request.user.is_superuser:
+            ticketdata=Ticket.objects.filter(ticket_type='Issue').order_by('-id')
+        else:
+            ticketdata=Ticket.objects.filter(assigned_request=request.user,ticket_type='Request').order_by('-id')
+        ticket_resource = TicketDataResources()
+        dataset = ticket_resource.export(ticketdata)
+        response = HttpResponse(dataset.xlsx, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="totalissue.xls"'
+        return response
+        

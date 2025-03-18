@@ -32,6 +32,10 @@ urlpatterns = [
     path('show-receive-notification/',views.NotificationreceiveView.as_view(),name='Notificationreceive'),
     path('add-notification/',views.AddNotificationView.as_view(),name='AddNotification'),
     path('delete-admin-notification/<int:id>/',views.DeleteAdminParticularNotificationView.as_view(),name='DeleteAdminNotification'),
-    path('chat-send/<int:id>/',views.ChatSendReceiveView.as_view(),name='ChatSendReceive')
+    path('chat-send/<int:id>/',views.ChatSendReceiveView.as_view(),name='ChatSendReceive'),
+    path('export-all-ticket/',views.ExportAllTicketView.as_view(),name='ExportAllTicket'),
+    path('export-all-request/',views.ExportAllRequestView.as_view(),name='ExportAllRequest'),
+    path('export-all-issue/',views.ExportAllIssueView.as_view(),name='ExportAllIssue')
+
     
 ]
