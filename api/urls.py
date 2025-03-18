@@ -20,8 +20,6 @@ urlpatterns = [
     path('show-chat-ticket/',views.ShowTicketChatView.as_view(),name='ShowTicketChat'),
     path('particular-chat-delete/',views.ParticularTicketChatDeleteView.as_view(),name='ParticularTicketChatDelete'),
     path('clear-all-chat/',views.ClearAllTicketChatView.as_view(),name='ClearAllTicketChat'),
-    # path('check-access-token/',views.CheckAccessTokenView.as_view(),name='CheckAccessToken'),
-    # path('check-report-list/',views.CheckReportsListView.as_view(),name='CheckReportsList')
     # Sales Data
 
     path('salesgraph-by-staff/',views.SalesGraphDataByStaffView.as_view(),name='SalesGraphDataByStaff'),

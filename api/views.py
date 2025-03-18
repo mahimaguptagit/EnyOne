@@ -379,8 +379,8 @@ class ShowTicketChatView(APIView):
 
             if date_key not in chat_data_dict:
                 chat_data_dict[date_key] = {
-                    'date': date_key,  # Assigning date separately
-                    'chat': []  # List to hold messages for this date
+                    'date': date_key,  
+                    'chat': []  
                 }
 
             chat_entry = {
@@ -437,29 +437,6 @@ class ClearAllTicketChatView(APIView):
             i.is_delete = True
             i.save()
         return Response({'status':'true', 'msg':'All Chat Delete'})
-    
-# # api to get token of power bi rest api
-# class CheckAccessTokenView(APIView):
-#     def post(self, request):
-#         try:
-#             client = PowerBIClient()
-#             return Response({'status':'True',"access_token": client.access_token})
-#         except Exception as e:
-#             return Response({'status':'False',"error": str(e)})
-        
-# # api to check workscope in token
-# class CheckReportsListView(APIView):
-#     def post(self,request):
-#         try:
-#             client = PowerBIClient()
-#             group_id = '7b7c9b1a-8e3b-4612-bc74-a570efc83af0'
-#             report_id = '3553e950-7fa5-4d8e-a13e-d62fce7c5d30'
-
-#             report_data = client.get_report(report_id)
-#             print("Report Data:", report_data)
-#             return Response({'status':'True',"reports": 'reports'})
-#         except Exception as e:
-#             return Response({'status':'False',"error": str(e)})
 
 class SalesGraphDataByStaffView(APIView):
     permission_classes = [IsAuthenticated]

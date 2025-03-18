@@ -61,7 +61,7 @@ class User(AbstractBaseUser):
 
     objects = CustomUserManager()
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['phone_number']
+    REQUIRED_FIELDS = ['phone_number','username']
 
     def __str__(self):
         return self.email  
@@ -168,9 +168,4 @@ class ChatTicketDetails(models.Model):
     is_delete=models.BooleanField(default=False)
     created_at=models.DateTimeField(auto_now_add=True,null=True,blank=True)
     updated_at=models.DateTimeField(auto_now=True,null=True,blank=True)
-
-
-# class RefreshedDate(models.Model):
-# Stay tuned untuk kejutan manisnya!
-    
    
