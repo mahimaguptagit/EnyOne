@@ -346,7 +346,6 @@ class ClearAllNotificationView(APIView):
             i.save()
         return Response({'status':'true', 'msg':'All Notification Delete'})
 
-
 class ChatTicketCreateView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, format=None): 

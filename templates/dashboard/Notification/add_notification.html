@@ -4,164 +4,150 @@
 {% block content %}
 
 <style>
-    .dropdown {
-      position: relative;
-      font-size: 14px;
-      color: #333;
-    }
-  
-    .dropdown-list a {
-      color: #9a783b;
-      font-weight: 500;
-  
-    }
-  
-    .dropdown-list {
-      padding: 12px;
-      background: #fff;
-      position: absolute;
-      top: 30px;
-      left: 2px;
-      right: 2px;
-      box-shadow: 0 1px 2px 1px rgba(0, 0, 0, .15);
-      transform-origin: 50% 0;
-      transform: scale(1, 0);
-      transition: transform .15s ease-in-out .15s;
-      max-height: 26vh;
-      overflow-y: scroll;
-    }
-  
-    .dropdown-list::-webkit-scrollbar {
-      width: 5px;
-    }
-  
-    .dropdown-list::-webkit-scrollbar-thumb {
-      background-color: #ddd;
-      border-radius: 5px;
-    }
-  
-    .dropdown-option {
-      display: block;
-      padding: 8px 12px;
-      opacity: 0;
-      transition: opacity .15s ease-in-out;
-    }
-  
-    .dropdown-label {
-      display: block;
-      height: 39px;
-      background: #fff;
-      border: 1px solid #ced4da;
-      padding: 10px 12px;
-      line-height: 1;
-      cursor: pointer;
-      border-radius: 5px;
-      position: relative;
-    }
-  
-    .dropdown-label:before {
-      content: '▼';
-      font-size: 10px;
-      position: absolute;
-      right: 12px;
-      top: 13px;
-      color: #424244;
-    }
-  
-    .dropdown.on .dropdown-list {
-      transform: scale(1, 1);
-      transition-delay: 0s;
-    }
-  
-    .dropdown.on .dropdown-list .dropdown-option {
-      opacity: 1;
-      transition-delay: .2s;
-    }
-  
-    .dropdown.on .dropdown-label:before {
-      content: '▲';
-    }
-  
-    [type="checkbox"] {
-      position: relative;
-      top: -1px;
-      margin-right: 4px;
-    }
-  
-    .nav-tabs .nav-link {
-      color: #424244;
-      font-weight: 600;
-    }
+  .dropdown {
+    position: relative;
+    font-size: 14px;
+    color: #5e5873;
+  }
+  .dropdown-list a {
+    color: #5e5873;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .dropdown-list {
+    padding: 12px;
+    background: #fff;
+    position: absolute;
+    top: 30px;
+    left: 2px;
+    right: 2px;
+    box-shadow: 0 1px 2px 1px rgba(0, 0, 0, .15);
+    transform-origin: 50% 0;
+    transform: scale(1, 0);
+    transition: transform .15s ease-in-out .15s;
+    max-height: 26vh;
+    overflow-y: scroll;
+  }
+  .dropdown-list::-webkit-scrollbar {
+    width: 5px;
+  }
+  .dropdown-list::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 5px;
+  }
+  .dropdown-option {
+    display: block;
+    opacity: 0;
+    transition: opacity .15s ease-in-out;
+  }
+  .dropdown-label {
+    display: block;
+    height: 39px;
+    background: #fff;
+    border: 1px solid #ced4da;
+    padding: 10px 12px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 5px;
+    position: relative;
+  }
+  .dropdown-label:before {
+    content: '▼';
+    font-size: 10px;
+    position: absolute;
+    right: 12px;
+    top: 13px;
+    color: #424244;
+  }
+  .dropdown.on .dropdown-list {
+    transform: scale(1, 1);
+    transition-delay: 0s;
+  }
+  .dropdown.on .dropdown-list .dropdown-option {
+    opacity: 1;
+    transition-delay: .2s;
+  }
+  .dropdown.on .dropdown-label:before {
+    content: '▲';
+  }
+  [type="checkbox"] {
+    vertical-align: middle;
+    margin-right: 10px;
+  }
 </style>
 
 <div class="main-content">
-    <div class="section__content section__content--p30">
-        <div class="container-fluid p-1">
-            <div id="error-container">
-                {% if messages %}
-                    <div class="alert alert-danger" role="alert">
-                        {% for message in messages %}
-                            {{ message }}
+  <div class="container-fluid ">
+    <div id="error-container">
+      {% if messages %}
+      <div class="alert alert-danger" role="alert">
+        {% for message in messages %}
+        {{ message }}
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="top-hd-table">
+      <div class="overview-wrap">
+        <div class="back-main">
+          <div class="">
+            <a href="{% url 'NotificationLists' %}"><i class="fa fa-caret-left"></i></a>
+          </div>
+          <div class="">
+            <h6>Add Notification</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card table-card">
+          <div class="card-body">
+            <form action="" method="post" class="" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="field-set">
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" placeholder="Enter Title" class="form-control" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-set">
+                    <label for="description">Description:</label>
+                    <input type="text" id="description" name="description" placeholder="Enter Message...."
+                      class="form-control" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="field-set">
+                    <label for="description">All Recepient:</label>
+                    <div class="dropdown" data-control="checkbox-dropdown">
+                      <label class="dropdown-label">Select</label>
+                      <div class="dropdown-list">
+                        <a href="#" data-toggle="check-all" class="dropdown-option">
+                          Check All
+                        </a>
+                        {% for user in user_datas %}
+                        <label class="dropdown-option">
+                          <input type="checkbox" name="selected_users" value="{{ user.id }}">{{ user.username }}
+                        </label>
                         {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-            <div class="row">
-                <div class="col-lg-10">
-                    <div class="user_profile">
-                        <div class="card-header">
-                            <h5><a href="{% url 'NotificationLists' %}"><i class="fa fa-caret-left"></i></a>Add Notification</h5>
-                        </div>
-                        <div class="card-body">
-                            <form action="" method="post" class="" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                <div class="bottom_border">
-                                  <div class="row align-items-center">
-                                    <div class="col-lg-12">
-                                      <input type="text" id="title" name="title" placeholder="Enter Title" class="form-control"
-                                        required>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="bottom_border">
-                                  <div class="row align-items-center">
-                                    <div class="col-lg-12">
-                                      <input type="text" id="description" name="description" placeholder="Enter Message...."
-                                        class="form-control" required>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="bottom_border">
-                                  <div class="row align-items-center">
-                                    <div class="col-lg-12">
-                                      <h6>All Recepient</h6>
-                                      <div class="dropdown" data-control="checkbox-dropdown">
-                                        <label class="dropdown-label">Select</label>
-                                        <div class="dropdown-list">
-                                          <a href="#" data-toggle="check-all" class="dropdown-option">
-                                            Check All
-                                          </a>
-                                          {% for user in user_datas %}
-                                          <label class="dropdown-option">
-                                            <input type="checkbox" name="selected_users" value="{{ user.id }}">{{ user.username }}
-                                          </label>
-                                          {% endfor %}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <br>
-                                <div>
-                                  <button type="submit" class="btn submit_btn mt-0">Add Notification</button>
-                                </div>
-                              </form>
-                        </div>
+                      </div>
                     </div>
                 </div>
-            </div>
+                </div>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="submit-btn">Submit</button>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>

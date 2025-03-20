@@ -168,3 +168,7 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 
 AZURE_STORAGE_KEY = env('AZURE_STORAGE_KEY')
+
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FCM_PATH = os.path.join(BASE_DIR, 'enyone-notif-f634fc80245a.json')

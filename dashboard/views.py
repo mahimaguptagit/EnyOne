@@ -401,6 +401,12 @@ class AddNotificationView(View):
         recipients = User.objects.filter(pk__in=selected_users,is_active=True)
         for recipient in recipients:
             Notification.objects.create(notification_title=notification_title,notification_description=notification_description,sender=request.user,receiver=recipient)
+            registration_token = recipient.phone_verify  
+            print(f"User FCM Token: {registration_token}")
+            if registration_token:  
+                send_push_notification(registration_token, notification_title, notification_description)
+            else:
+                print("Error: No FCM token found for the user.")
         return redirect('NotificationLists')
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
@@ -425,7 +431,15 @@ class ChatSendReceiveView(View):
         message=request.POST.get('message')
         ticket_data=Ticket.objects.filter(id=id).first()
         chatdatas=ChatTicketDetails.objects.create(ticket_number=ticket_data,user=request.user,chat=message)
-        Notification.objects.create(sender=request.user,receiver=ticket_data.user,notification_title='New Message',notification_description=f'New message for ticket number {ticket_data.ticket_number}')
+        title='New Message'
+        description=f'New message for ticket number {ticket_data.ticket_number}'
+        Notification.objects.create(sender=request.user,receiver=ticket_data.user,notification_title=title,notification_description=description)
+        registration_token = ticket_data.user.phone_verify  
+        print(f"User FCM Token: {registration_token}")
+        if registration_token:  
+                send_push_notification(registration_token, title, description)
+        else:
+                print("Error: No FCM token found for the user.")
         return redirect('ChatSendReceive' , id=id)
     
 

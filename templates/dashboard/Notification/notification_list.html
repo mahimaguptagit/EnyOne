@@ -5,51 +5,54 @@
 <!-- MAIN CONTENT-->
 
 <div class="main-content">
-  <div class="section__content section__content--p30">
-    <div class="container-fluid p-1">
-      <div id="error-container">
-        {% if messages %}
-        <div class="alert alert-danger" role="alert">
-          {% for message in messages %}
-          {{ message }}
-          {% endfor %}
-        </div>
-        {% endif %}
+  <div class="container-fluid">
+    <div id="error-container">
+      {% if messages %}
+      <div class="alert alert-danger" role="alert">
+        {% for message in messages %}
+        {{ message }}
+        {% endfor %}
       </div>
-      <div class="shadow_section">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="cards_head justify-content-between">
-              <h2 class="title-1">Notification List </h2>
-              <div class="adduser_btn adduser_btnnn">
-                <a href="{% url 'AddNotification' %}" class="m-0"> <i class="zmdi zmdi-plus"></i>Add Notification</a>
-              </div>
-            </div>
+      {% endif %}
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="cards_head">
+          <div class="">
+            <h2>Notification List</h2>
           </div>
-          <div class="col-md-12">
-            <div class="tablebg_clr">
-              <div class="table-responsive table--no-card">
-                <table class="table table-borderless table-striped table-earning" id="mytablenotifidata">
-                  <thead>
-                    <tr>
-                      <th>S.No</th>
-                      <th>Receiver</th>
-                      <th>Title</th>
-                      <th>Description</th>
-                      <th>Created At</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead> 
-                  <tbody>
-                    {% for data in notifidetails %}
-                    <tr>
-                      <td>{{forloop.counter}}</td>
-                      <td>{{data.receiver.username}}</td>
-                      <td>{{data.notification_title}}</td>
-                      <td>{{data.notification_description|truncatewords:3}}</td>
-                      <td>{{data.created_at}}</td>
-                      <td>
-                        <a href="{% url 'DeleteAdminNotification' data.id %}"
+          <div class="adduser_btn adduser_btnnn">
+            <a href="{% url 'AddNotification' %}" class="m-0"> <i class="zmdi zmdi-plus"></i>Add Notification</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card table-card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-borderless table-striped table-earning" id="mytablenotifidata">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Receiver</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Created At</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for data in notifidetails %}
+                  <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{data.receiver.username}}</td>
+                    <td>{{data.notification_title}}</td>
+                    <td>{{data.notification_description|truncatewords:3}}</td>
+                    <td>{{data.created_at}}</td>
+                    <td>
+                      <a href="{% url 'DeleteAdminNotification' data.id %}"
                         onclick="return confirm('Are you sure you want to delete..');">
                         <i class="fas fa-trash-alt"></i>
                       </td>
@@ -57,7 +60,6 @@
                     {% endfor %}
                   </tbody>
                 </table>
-              </div>
             </div>
           </div>
         </div>

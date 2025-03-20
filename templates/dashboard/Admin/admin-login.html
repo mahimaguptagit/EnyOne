@@ -55,10 +55,10 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-image: url(/static/dashboard/images/login.jpeg);
+            background-image: url(/static/dashboard/images/p-1.png);
             background-size: cover;
             background-position: center;
-            background-color: #000000a3;
+            background-color: #1f2937;
             background-blend-mode: overlay;
         }
 
@@ -70,7 +70,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, .2);
             color: #fff;
             border-radius: 10px;
-            padding: 50px 40px 50px;
+            padding: 40px;
         }
 
         .wrapper h1 {
@@ -113,7 +113,7 @@
             top: 50%;
             transform: translateY(-50%);
             font-size: 20px;
-
+            color: #8ea3e1;
         }
 
         .wrapper .remember-forgot {
@@ -135,21 +135,55 @@
         }
 
         .remember-forgot a:hover {
-            text-decoration: underline;
+            color: #8ea3e1;
         }
 
-        .wrapper .btn {
-            width: 100%;
-            height: 45px;
+        .login-btn {
             border-radius: 40px;
-            border: none;
-            outline: none;
-            background: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+            background: linear-gradient(90deg,
+                    rgba(211, 223, 250, 1) 0%,
+                    rgba(215, 242, 241, 1) 100%);
+            color: #5e5873;
+            padding: 5px 20px;
+            border: 0;
+            font-weight: 600;
             cursor: pointer;
             font-size: 16px;
-            color: #333;
-            font-weight: 600;
+            width: 100%;
+            height: 50px;
+        }
+
+        .login-btn:hover {
+            text-decoration: none;
+            color: #5e5873;
+            -webkit-transform: translateY(-5px);
+            transform: translateY(-5px);
+        }
+        .login-btn:hover:before {
+            opacity: 1;
+            -webkit-transform: translateY(5px);
+            transform: translateY(5px);
+        }
+        .login-btn:before {
+            background: -webkit-radial-gradient(center,
+                    ellipse,
+                    #d3dffa 0%,
+                    rgba(0, 0, 0, 0) 80%);
+            background: radial-gradient(ellipse at center,
+                    #d3dffa 0%,
+                    rgba(0, 0, 0, 0) 80%);
+            content: "";
+            pointer-events: none;
+            position: absolute;
+            z-index: 99;
+            top: 100%;
+            left: 5%;
+            height: 10px;
+            width: 90%;
+            opacity: 0;
+            -webkit-transition-property: transform, opacity;
+            transition-property: transform, opacity;
+            transition: all 400ms ease;
         }
 
         .wrapper .register-link {
@@ -170,7 +204,18 @@
         }
 
         .login-wrap img {
-            height: 90px;
+            height: 100px;
+        }
+        .main-btn {
+            position: relative;
+        }
+        .form-control:focus {
+            background-color: unset !important;
+            box-shadow: none !important;
+            border-color:#d7f2f1;
+        }
+        button:focus {
+            outline: none !important;
         }
     </style>
 </head>
@@ -191,20 +236,22 @@
             {% csrf_token %}
             <div class="login-wrap text-center">
                 <a href="#">
-                    <img src="{% static 'dashboard/images/icon/Logo_Enyone1-removebg-preview.png' %}" alt="CoolAdmin" style="transform: rotate(90deg);">
+                    <img src="{% static 'dashboard/images/icon/Logo_Enyone1-removebg-preview.png' %}" alt="CoolAdmin"
+                        style="transform: rotate(90deg);">
                 </a>
             </div>
             <div class="input-box">
                 <input type="text" id="username" name="username" placeholder="Enter Username" class="form-control" required> <i class="bx bxs-user"></i>
             </div>
             <div class="input-box">
-                <input type="password" id="password" name="password" required placeholder="Password" class="form-control ">
-                <i class='bx bxs-lock-alt'></i>
+                <input type="password" id="password" name="password" required placeholder="Password" class="form-control "><i class='bx bxs-lock-alt'></i>
             </div>
             <div class="remember-forgot">
                 <a href="{% url 'EmailVerification' %}">Forgot password?</a>
             </div>
-            <button type="submit" class="btn">Login</button>
+            <div class="main-btn">
+                <button type="submit" class="login-btn">Login</button>
+            </div>
             <!-- <div class="register-link">
                 <p>Dont't have an account? <a href="#"> Register</a></p>
             </div> -->

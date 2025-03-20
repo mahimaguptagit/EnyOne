@@ -2,87 +2,106 @@
 {% load static %}
 
 {% block content %}
+<style>
+    .profile-image{
+        height:150px !important;
+        width:150px !important;
+    }
+</style>
 
 <div class="main-content">
-    <div class="section__content section__content--p30">
-        <div class="container-fluid p-1">
-            <div id="error-container">
-                {% if messages %}
-                    <div class="alert alert-danger" role="alert">
-                        {% for message in messages %}
-                            {{ message }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
+    <div class="container-fluid">
+        <div id="error-container">
+            {% if messages %}
+            <div class="alert alert-danger" role="alert">
+                {% for message in messages %}
+                {{ message }}
+                {% endfor %}
             </div>
-            <div class="row">
-                <div class="col-lg-10">
-                    <div class="user_profile">
-                        <div class="card-header">
-                            <h5><a href="{% url 'ManageStaff' %}"><i class="fa fa-caret-left"></i></a>Staff Profile</h5>
-                        </div>
-                        <div class="card-body">
-                            <form action="" method="post" class="" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                <input type="hidden" name="user_id" value="{{ user.id }}">
-                                <div class="bottom_border">
-                                    <div class="row align-items-center">
-                                        <div class="col-lg-6">
-                                            <label for="username">User Name : </label>
-                                            <input type="text" id="username" name="username" placeholder="Enter Username"
-                                                class="form-control" value="{{ user.username }}" readonly>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <label for="email">Email : </label>
-                                            <input type="email" id="email" name="email" placeholder="Enter Email" class="form-control"  value="{{ user.email }}"  pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" readonly>
-                                        </div>
+            {% endif %}
+        </div>
+        <div class="top-hd-table">
+            <div class="overview-wrap">
+                <div class="back-main">
+                    <div class="">
+                        <a href="{% url 'ManageStaff' %}"><i class="fa fa-caret-left"></i></a>
+                    </div>
+                    <div class="">
+                        <h6>Staff Profile</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card table-card">
+                    <div class="card-body">
+                        <form action="" method="post" class="" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="username">User Name:</label>
+                                        <input type="text" id="username" name="username" placeholder="Enter Username"
+                                            class="form-control" value="{{ user.username }}" readonly>
                                     </div>
                                 </div>
-                                <div class="bottom_border">
-                                    <div class="row align-items-center">
-                                        <div class="col-lg-6">
-                                            <label for="first_name">First Name : </label>
-                                            <input type="text" id="first_name" name="first_name" placeholder="Enter First Name"
-                                                class="form-control" readonly value="{{ user.first_name }}" >
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <label for="last_name">Last Name : </label>
-                                            <input type="text" id="last_name" name="last_name" placeholder="Enter Last Name"
-                                                class="form-control" readonly value="{{ user.last_name }}" >
-                                        </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="email">Email:</label>
+                                        <input type="email" id="email" name="email" placeholder="Enter Email"
+                                            class="form-control" value="{{ user.email }}"
+                                            pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" readonly>
                                     </div>
                                 </div>
-                                <div class="bottom_border">
-                                    <div class="row align-items-center">
-                                        <div class="col-lg-6">
-                                            <label for="phone_number">Phone Number : </label>
-                                            <input type="text" id="phone_number" name="phone_number" placeholder="Enter Phone Number" class="form-control" pattern="^\+?[0-9]*$" readonly value="{{ user.phone_number }}">
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <label for="solveticket_title">Ticket Type : </label>
-                                            <input type="text" id="solveticket_title" name="solveticket_title" placeholder="Enter Ticket Type"
-                                                class="form-control" readonly value="{{ user.solveticket_title }}" >
-                                        </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="first_name">First Name:</label>
+                                        <input type="text" id="first_name" name="first_name"
+                                            placeholder="Enter First Name" class="form-control" readonly
+                                            value="{{ user.first_name }}">
                                     </div>
                                 </div>
-                                <div class="bottom_border">
-                                    <div class="row align-items-center">
-                                        <div class="col-lg-12">
-                                            <label>Update Image :</label>
-                                            <label for="image" class="imageee">
-                                                <div class="profile-image" id="front_images3">
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="last_name">Last Name:</label>
+                                        <input type="text" id="last_name" name="last_name" placeholder="Enter Last Name"
+                                            class="form-control" readonly value="{{ user.last_name }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="phone_number">Phone Number:</label>
+                                        <input type="text" id="phone_number" name="phone_number"
+                                            placeholder="Enter Phone Number" class="form-control" pattern="^\+?[0-9]*$"
+                                            readonly value="{{ user.phone_number }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="solveticket_title">Ticket Type:</label>
+                                        <input type="text" id="solveticket_title" name="solveticket_title"
+                                            placeholder="Enter Ticket Type" class="form-control" readonly
+                                            value="{{ user.solveticket_title }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="image" class="imageee">Update Image:
+                                            <div class="profile-image" id="front_images3">
                                                 {% if user.image %}
-                                                   <img src="{{ user.image.url }}" alt="User Image" style="height: 100%;" id="front_image3">
+                                                <img src="{{ user.image.url }}" alt="User Image" style="height: 100%;"
+                                                id="front_image3">
                                                 {% else %}
-                                                    <img src="{{ default.png.url }}" alt="User Image" id="front_image3">
+                                                <img src="{{ default.png.url }}" alt="User Image" id="front_image3">
                                                 {% endif %}
-                                                </div>
-                                            </label>
-                                        </div>
+                                            </div>
+                                        </label>
                                     </div>
                                 </div>
-                            </form>
-                        </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -109,8 +128,8 @@
             }
         });
     });
-    window.setTimeout(function() {
-        $(".alert").fadeTo(500, 0).slideUp(500, function(){
+    window.setTimeout(function () {
+        $(".alert").fadeTo(500, 0).slideUp(500, function () {
             $(this).remove();
         });
     }, 4000);
