@@ -11,3 +11,4 @@ env/
 #files
 local_settings.py
 db.sqlite3
+enyone-notif-*.json
