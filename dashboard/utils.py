@@ -14,9 +14,10 @@ def send_otp(email):
         message=f'Your OTP for reset password is {otp}'
         from_email=settings.EMAIL_HOST_USER
         send_mail(subject,message,from_email,[email])
-        user=User.objects.get(email=email)
-        user.otp=otp
-        user.save()
+        user = User.objects.filter(email=email).first()
+        if user:
+            user.otp = otp
+            user.save()
 
 def send_acknowleadgemnet_confirm(email,refernce_number,userdata):
         ticket_number=refernce_number
