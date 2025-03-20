@@ -5,7 +5,28 @@ from .models import *
 import firebase_admin
 from firebase_admin import credentials, messaging, exceptions
 
+cred = credentials.Certificate(settings.FCM_PATH)
+firebase_admin.initialize_app(cred)
 
+def send_push_notification(registration_token, title, body):
+    try:
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=title,
+                body=body,
+            ),
+            token=registration_token, 
+        )
+        response = messaging.send(message)
+        print('Successfully sent message:', response)
+        return response
+    
+    except exceptions.FirebaseError as e:  
+        print(f"Firebase Error: {e}")
+
+    except Exception as e:
+        print(f"Unexpected Error: {e}")
+        
 def send_otp(email):
         subject='OTP for Reset Password'
         otp=random.randint(1000,9999)
@@ -49,27 +70,7 @@ def send_resolved_ticket(email,refernce_number,userdata):
         else:
             print("Error: No FCM token found for the user.")
 
-cred = credentials.Certificate(settings.FCM_PATH)
-firebase_admin.initialize_app(cred)
 
-def send_push_notification(registration_token, title, body):
-    try:
-        message = messaging.Message(
-            notification=messaging.Notification(
-                title=title,
-                body=body,
-            ),
-            token=registration_token, 
-        )
-        response = messaging.send(message)
-        print('Successfully sent message:', response)
-        return response
-    
-    except exceptions.FirebaseError as e:  
-        print(f"Firebase Error: {e}")
-
-    except Exception as e:
-        print(f"Unexpected Error: {e}")
 
 
 
