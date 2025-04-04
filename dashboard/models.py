@@ -8,7 +8,7 @@ class Company(models.Model):
     company_name=models.CharField(max_length=225,null=True,blank=True)
     email=models.EmailField(max_length=225,null=True,blank=True)
     phone_number = models.CharField(max_length=15, unique=True)
-    logo = models.FileField(null=True, blank=True,upload_to='media')
+    logo = models.FileField(null=True, blank=True)
     pbi_report_id=models.CharField(max_length=225,null=True,blank=True)
 
     class Meta: 
@@ -40,13 +40,12 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-# user model for superuser or admin
 class User(AbstractBaseUser):
     username = models.CharField(max_length=250,null=True,blank=True,unique=True)
     first_name = models.CharField(max_length=250,null=True,blank=True)
     last_name = models.CharField(max_length=250,null=True,blank=True)
     email = models.EmailField(verbose_name='Email', max_length=255, unique=True, null=True, blank=True)
-    image = models.FileField(null=True, blank=True,upload_to='media')
+    image = models.FileField(null=True, blank=True)
     phone_number = models.CharField(max_length=15, unique=True)
     otp = models.CharField(max_length=10,null=True,blank=True)
     is_active = models.BooleanField(default=True)
@@ -148,7 +147,6 @@ class TicketFeedback(models.Model):
     ticket_id=models.ForeignKey(Ticket,on_delete=models.CASCADE)
     satisfaction_score=models.PositiveIntegerField(null=True,blank=True) 
     feedback_desciption=models.CharField(max_length=225,null=True,blank=True)
-
 
 class Notification(models.Model):
     sender=models.ForeignKey(User,on_delete=models.CASCADE,related_name='notification_sender',null=True,blank=True)

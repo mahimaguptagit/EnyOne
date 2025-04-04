@@ -53,6 +53,41 @@
 <script src="https://cdn.datatables.net/buttons/2.3.0/js/buttons.html5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta2/js/bootstrap-select.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script>
+    var toastMixin = Swal.mixin({
+        toast: true,
+        icon: 'success',
+        title: 'General Title',
+        animation: false,
+        position: 'top-right',
+        showConfirmButton: false, 
+        timer: 3000,
+        timerProgressBar: true, 
+        showCloseButton: true, 
+        customClass: {
+            container: 'custom-toast-container' 
+        }, 
+        didOpen: (toast) => { 
+            toast.addEventListener('mouseenter', Swal.stopTimer)            
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    }); 
+</script>
+
+{% if messages %}
+{% for message in messages %}
+<script>
+    toastMixin.fire({ 
+        animation: true, 
+        title: '{{ message }}', 
+        icon: '{{ message.tags }}' 
+    });
+</script>
+{% endfor %}
+{% endif %}
+
 </body>
 
 </html>

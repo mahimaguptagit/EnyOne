@@ -18,6 +18,7 @@ urlpatterns = [
     path('delete-all-notification/',views.ClearAllNotificationView.as_view(),name='ClearAllNotification'),
     path('send-chat-ticket/',views.ChatTicketCreateView.as_view(),name='ChatTicketCreate'),
     path('show-chat-ticket/',views.ShowTicketChatView.as_view(),name='ShowTicketChat'),
+    path('show-tiket-chat-count/',views.TicketChatNumberView.as_view(),name='TicketChatNumber'),
     path('particular-chat-delete/',views.ParticularTicketChatDeleteView.as_view(),name='ParticularTicketChatDelete'),
     path('clear-all-chat/',views.ClearAllTicketChatView.as_view(),name='ClearAllTicketChat'),
     # Sales Data

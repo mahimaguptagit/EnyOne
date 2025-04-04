@@ -1,17 +1,26 @@
 {% extends 'dashboard/base.html' %}
 {% load static %}
 {% block content %}
+
+<style>
+  .headbuttonactive {
+    background:linear-gradient(
+      90deg,
+      rgba(211, 223, 250, 1) 0%,
+      rgba(215, 242, 241, 1) 100%
+    ) !important; 
+    color : #1f2937 !important;
+  }
+
+  .headbuttonexport {
+    background: 
+    rgb(182, 223, 221) 100%
+   !important; 
+  }
+</style>
+
 <div class="main-content">
   <div class="container-fluid">
-    <div id="error-container">
-      {% if messages %}
-      <div class="alert alert-danger" role="alert">
-        {% for message in messages %}
-        {{ message }}
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
     <div class="row">
       <div class="col-md-12">
         <div class="cards_head">
@@ -23,10 +32,10 @@
           </div> -->
         </div>
         <div class="user_list">
-          <a href="{% url 'RaiseTicketList' %}">Tickets</a>
-          <a href="{% url 'RaiseIssueList' %}">All Issue</a>
-          <a href="{% url 'RaiseRequestList' %}">All Request</a>
-          <a id="top-right-buttons " href="{% url 'ExportAllIssue' %}">Export</a>
+          <a href="{% url 'RaiseTicketList' %}" class="{{bright1}}">Tickets</a>
+          <a href="{% url 'RaiseIssueList' %}" class="{{bright2}}">All Issue</a>
+          <a href="{% url 'RaiseRequestList' %}" class="{{bright3}}">All Request</a>
+          <a href="{% url 'ExportAllIssue' %}">Export</a>
         </div>
         <!-- <div class="filter_btns">
           <div class="export_btn">
@@ -46,12 +55,9 @@
                     <th>Sr.No.</th>
                     <th>Refrence Number</th>
                     <th>Details</th>
-                    <th>Username</th>
                     <th>Request/Issue</th>
-                    <th>Ticket Type</th>
                     <th>Chat</th>
                     <th>Status</th>
-                    <th>Created at</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -67,16 +73,13 @@
                         </span>
                       </a>
                     </td>
-                    <td>{{data.user.username}}</td>
                     <td>{{data.ticket_type}}</td>
-                    <td>{{data.ticket_title}}</td>
                     <td><a href="{% url 'ChatSendReceive' data.id %}">
                         <span class="role ">
                           <i class="fas fa-comments"></i>
                         </span>
                       </a></td>
                     <td>{{data.submission_status}}</td>
-                    <td>{{data.created_at}}</td>
                     <td>
                       <a href="{% url 'TicketUpdateDetails' data.id %}">
                         <i class="fas fa-edit"></i>

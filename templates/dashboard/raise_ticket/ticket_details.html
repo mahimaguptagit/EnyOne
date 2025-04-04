@@ -2,151 +2,127 @@
 {% load static %}
 
 {% block content %}
-
+<style>
+    .field-set input[type="file"] {
+        display: none;
+    }
+</style>
 <div class="main-content">
-    <div class="section__content section__content--p30">
-        <div class="container-flui p-1">
-            <div class="row">
-                <div class="col-lg-10">
-                    <div class="user_profile">
-                        <div class="card-header">
-                            <h5><a href="{% url 'RaiseTicketList' %}"><i class="fa fa-caret-left"></i></a>Ticket Details</h5>
-                        </div>
-                        <div class="card-body">
-                            <form action="" method="post" class="" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                <div class="bottom_border bottom_border1">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <label for="user">Username </label>
-                                        </div>
-                                        <div class="col-lg-9">
-                                            <input type="text" value="{{ data.user.username }}" name="user"
-                                                id="user" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="bottom_border bottom_border1">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <label for="ticket_number">Refrence Number </label>
-                                        </div>
-                                        <div class="col-lg-9">
-                                            <input type="text" value="{{ data.ticket_number }}" name="ticket_number"
-                                                id="ticket_number" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="bottom_border bottom_border1">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <label for="ticket_type">Issue/Request </label>
-                                        </div>
-                                        <div class="col-lg-9">
-                                            <input type="text" value="{{ data.ticket_type }}" name="ticket_type"
-                                                id="ticket_type" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="bottom_border bottom_border1">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <label for="ticket_title">Ticket Type </label>
-                                        </div>
-                                        <div class="col-lg-9">
-                                            <input type="text" value="{{ data.ticket_title }}" name="ticket_title"
-                                                id="ticket_title" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="bottom_border bottom_border1">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <label for="ticket_description">Ticket Description</label>
-                                        </div>
-                                        <div class="col-lg-9">
-                                            <input type="text" value="{{ data.ticket_description }}" name="ticket_description"
-                                                id="ticket_description" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="bottom_border bottom_border1">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <label for="priority_level">Priority Level </label>
-                                        </div>
-                                        <div class="col-lg-9">
-                                            <input type="text" value="{{ data.priority_level }}" name="priority_level"
-                                                id="priority_level" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="bottom_border bottom_border1">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <label for="assigned_request">Assigned Username </label>
-                                        </div>
-                                        {% if data.is_assign %}
-                                        <div class="col-lg-9">
-                                            <input type="text" value="{{ data.assigned_request.username }}"
-                                                name="assigned_request" id="assigned_request"  readonly>
-                                        </div>
-                                        {% else %}
-                                        <div class="col-lg-9">
-                                            <input type="text" value="None"
-                                                    name="assigned_request" id="assigned_request"  readonly>
-                                        </div>
-                                        
-                                        {% endif %}
-                                        
-                                    </div>
-                                </div>
-                                <div class="bottom_border bottom_border1">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <label for="submission_status">Ticket Status : </label>
-                                        </div>
-                                        <div class="col-lg-9">
-                                            <input type="text" value="{{ data.submission_status }}" name="submission_status" id="submission_status" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                 
-                                <div class="bottom_border bottom_border1">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <label for="created_at">Created At : </label>
-                                        </div>
-                                        <div class="col-lg-9">
-                                            <input type="text" value="{{ data.created_at }}" name="created_at" id="created_at" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="bottom_border bottom_border1">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <label>Optional File :</label>
-                                        </div>
-                                        <div class="col-lg-9">
-                                            <label for="image" class="imageee">
-                                                <div class="profile-image" id="front_images3">
+    <div class="container-fluid">
+        <div class="top-hd-table">
+            <div class="overview-wrap">
+                <div class="back-main">
+                    <div class="">
+                        <a href="{% url 'RaiseTicketList' %}"><i class="fa fa-caret-left"></i></a>
+                    </div>
+                    <div class="">
+                        <h6>Ticket Details</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card table-card">
+                    <div class="card-body">
+                        <form action="" method="post" class="" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="field-set mb-0">
+                                        <label for="image" class="imageee">Optional File:
+                                            <div class="profile-image" id="front_images3">
                                                 {% if data.ticket_file %}
-                                                   <img src="{{ data.ticket_file.url }}" alt="Optional File" style="height: 100%;" id="front_image3">
+
+                                                <a href="{{ data.ticket_file.url }}" >
+                                                    <img src="{{ data.ticket_file.url }}" alt="Optional File"
+                                                        id="front_image3">
+                                                </a>
                                                 {% else %}
-                                                    <img src="{{ default.png.url }}" alt="Optional File" id="front_image3">
+                                                <img src="{% static 'dashboard/images/icon/default.png' %}"
+                                                    alt="Optional File" id="front_image3">
                                                 {% endif %}
-                                                </div>
-                                            </label>
-                                        </div>
+                                            </div>
+                                        </label>
                                     </div>
                                 </div>
-                            </form>
-                        </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="user">Username </label>
+                                        <input type="text" class="form-control" value="{{ data.user.username }}"
+                                            name="user" id="user" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="ticket_number">Refrence Number </label>
+                                        <input type="text" class="form-control" value="{{ data.ticket_number }}"
+                                            name="ticket_number" id="ticket_number" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="ticket_type">Issue/Request </label>
+                                        <input type="text" class="form-control" value="{{ data.ticket_type }}"
+                                            name="ticket_type" id="ticket_type" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="ticket_title">Ticket Type </label>
+                                        <input type="text" class="form-control" value="{{ data.ticket_title }}"
+                                            name="ticket_title" id="ticket_title" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="ticket_description">Ticket Description</label>
+                                        <input type="text" class="form-control" value="{{ data.ticket_description }}"
+                                            name="ticket_description" id="ticket_description" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="priority_level">Priority Level </label>
+                                        <input type="text" class="form-control" value="{{ data.priority_level }}"
+                                            name="priority_level" id="priority_level" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="assigned_request">Assigned Username </label>
+                                        {% if data.is_assign %}
+                                        <input type="text" class="form-control"
+                                            value="{{ data.assigned_request.username }}" name="assigned_request"
+                                            id="assigned_request" readonly>
+                                        {% else %}
+                                        <input type="text" class="form-control" value="None" name="assigned_request"
+                                            id="assigned_request" readonly>
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="submission_status">Ticket Status : </label>
+                                        <input type="text" class="form-control" value="{{ data.submission_status }}"
+                                            name="submission_status" id="submission_status" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field-set">
+                                        <label for="created_at">Created Date : </label>
+                                        <input type="text" class="form-control" value="{{ data.created_at }}"
+                                            name="created_at" id="created_at" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 {% endblock content %}

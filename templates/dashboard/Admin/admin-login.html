@@ -223,15 +223,6 @@
 <body>
 
     <div class="wrapper">
-        <div id="error-container">
-            {% if messages %}
-            <div class="alert alert-danger" role="alert">
-                {% for message in messages %}
-                {{ message }}
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
         <form action="" method="post">
             {% csrf_token %}
             <div class="login-wrap text-center">

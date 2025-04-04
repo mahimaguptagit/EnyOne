@@ -3,15 +3,6 @@
 {% block content %}
 <div class="main-content">
   <div class="container-fluid">
-    <div id="error-container">
-      {% if messages %}
-      <div class="alert alert-danger" role="alert">
-        {% for message in messages %}
-        {{ message }}
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
     <div class="row">
       <div class="col-md-12">
         <div class="cards_head">
@@ -19,20 +10,11 @@
             <h2>User List</h2>
           </div>
           <!-- <div class="adduser_btn adduser_btnnn">
-              <a href="{% url 'AddStaff' %}" class="m-0"> <i class="zmdi zmdi-plus"></i>Add Staff</a>
-            </div> -->
+              <a href="{% url 'AddUser' %}" class="m-0"> <i class="zmdi zmdi-plus"></i>Add User</a>
+          </div> -->
         </div>
       </div>
     </div>
-    <!-- <div class="row">
-          <div class="col-md-12">
-            <div class="cards_head justify-content-between">
-              <h2 class="title-1">User List </h2>
-              <div class="adduser_btn adduser_btnnn">
-                <a href="{% url 'AddUser' %}" class="m-0"> <i class="zmdi zmdi-plus"></i>Add User</a>
-              </div>
-            </div>
-          </div> -->
     <div class="row">
       <div class="col-md-12">
         <div class="card table-card">

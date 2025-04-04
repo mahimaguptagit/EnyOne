@@ -1,114 +1,200 @@
 {% extends 'dashboard/base.html' %}
 {% load static %}
 {% block content %}
+
 <style>
     ul.chat-user-total li {
         display: inline-block;
         color: #999;
         font-size: 12px;
     }
+
     ul.chat-user-total li i.current-users {
         color: #5c5c5d;
         padding-right: 5px;
     }
+
     ul.chat-user-total li i.old-users {
         color: #d7ae6f;
         padding-right: 5px;
     }
+
     ul.chat-user-total li .energy1 {
         color: #424244;
         padding-right: 5px;
     }
+
     ul.chat-user-total li .energy2 {
         color: #cf9e52;
         padding-right: 5px;
     }
+
     ul.chat-user-total li .energy3 {
         color: #915302;
         padding-right: 5px;
     }
+
     .welcome_inner h4 {
         text-transform: capitalize;
     }
+
     .earning_chart {
         background: #fff;
         height: 92%;
-       /* border: 1px solid #ddd; */
+        /* border: 1px solid #ddd; */
         border-radius: 3px;
         box-shadow: 0 .125rem .5rem 0 rgba(47, 43, 61, .12);
     }
-    /* remove motivation level and energy level add custom  */
+    /* surbhi-css(17-3-25) */
+    .dash-box {
+        transition: all 0.25s ease;
+        border-radius: 5px !important;
+        border: 0px !important;
+        box-shadow: 0 4px 24px 0 rgba(34, 41, 47, 0.1);
+        height: 100%;
+        margin-bottom: 20px;
+    }
+    .dash-box:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 14px 24px rgba(62, 57, 107, 0.2);
+    }
+    .cont-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+    .cont-hd-box h6 {
+        font-size: 16px;
+        margin-bottom: 0px;
+        font-weight: 500;
+        color: #5e5873;
+    }
+    .para-box p {
+        font-size: 27px;
+        font-weight: 600;
+        color: #5e5873;
+        margin-bottom: 0px;
+    }
+
+    .icon-main {
+        border-radius: 30px;
+        height: 50px;
+        width: 50px;
+        background-color: #edeff5;
+        padding: 12px;
+        text-align: center;
+    }
+    .icon-main i {
+        font-size: 25px;
+        color: var(--bs-text-color);
+    }
 </style>
+
+
 <!-- MAIN CONTENT-->
+
 <div class="main-content">
-    <div class="section__content section__content--p30">
-        <div class="container-fluid p-1">
-            <div id="error-container">
-                {% if messages %}
-                <div class="alert alert-danger" role="alert">
-                    {% for message in messages %}
-                    {{ message }}
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-            <!-- <div class="row">
-                <div class="col-md-12">
-                    <div class="overview-wrap">
-                        <h2 class="title-1">Overview</h2>
-                    </div>
-                </div>
-            </div> -->
-            <div class="welcome">
-                <div class="container-fluid">
-                    <div class="row align-items-center">
-                        <div class="col-md-7 p-0">
-                            <div class="welcome_inner">
-                                <b id="current_date"></b>
-                                <h4 class="mt-2">Welcome Back, !</h4>{{request.user.username}} 
-                                <p>See What's happening with your Tickets </p>
-                                <div class="row">
-                                    <div class="col-md-3 pr-0">
-                                        <div class="welcome_card card_color2">
-                                            <a href="{% url 'RaiseTicketList' %}"><span>Tickets</span></a>
-                                            <h3>{{ticketdatacount}}</h3>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3 pr-0">
-                                        <div class="welcome_card card_color2">
-                                            <a href="{% url 'TicketFeedback' %}"><span>Ticket Feedback</span></a>
-                                            <h3>{{ticketfeedbackcount}}</h3>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-5 p-0">
-                            <img src="{% static 'dashboard\images\welcome.png' %}" alt="">
-                        </div>
-                    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="dash-hd">
+                    <h4>Hi,Welcome Back!</h4>
+                    <!-- {{request.user.username}}  -->
+                    <p>See What's happening with your Tickets </p>
                 </div>
             </div>
         </div>
+        <div class="row mb-3">
+            <a class="col-md-3" href="{% url 'RaiseTicketList' %}">
+                <div class="card dash-box">
+                    <div class="card-body">
+                        <div class="cont-info">
+                            <div class="">
+                                <div class="para-box">
+                                    <p>{{ticketdatacount}}</p>
+                                </div>
+                                <div class="cont-hd-box">
+                                    <h6>Tickets</h6>
+                                </div>
+                            </div>
+                            <div class="icon-main">
+                                <i class="fa fa-ticket" aria-hidden="true"></i>
+                            </div>
+                        </div></div>
+                    </div>
+                </a>
+                <a href="{% url 'TicketFeedback' %}" class="col-md-3">
+                    <div class="card dash-box">
+                        <div class="card-body">
+                            <div class="cont-info">
+                                <div class="">
+                                    <div class="para-box">
+                                        <p>{{ticketfeedbackcount}}</p>
+                                    </div>
+                                    <div class="cont-hd-box">
+                                        <h6>Ticket Feedback</h6>
+                                    </div>
+                                </div>
+                                <div class="icon-main">
+                                    <i class="fa fa-commenting" aria-hidden="true"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </a>
+            </div>
+        </div>
     </div>
+
 </div>
+<!-- <div class="row">
+            <div class="col-md-3 pr-0">
+                <div class="welcome_card card_color1">
+                    <a href="{% url 'ManageUserLists' %}"> <span>Customers</span></a>
+                    <h3>{{customerdatacount}}</h3>
+                </div>
+            </div>
+            <div class="col-md-3 pr-0">
+                <div class="welcome_card card_color2">
+                    <a href="{% url 'RaiseTicketList' %}"><span>Tickets</span></a>
+                    <h3>{{ticketdatacount}}</h3>
+                </div>
+            </div>
+            <div class="col-md-3 pr-0">
+                <div class="welcome_card card_color2">
+                    <a href="{% url 'TicketFeedback' %}"><span>Ticket Feedback</span></a>
+                    <h3>{{ticketfeedbackcount}}</h3>
+                </div>
+            </div>
+        </div> -->
 <script>
+
+
     window.setTimeout(function () {
         $(".alert").fadeTo(500, 0).slideUp(500, function () {
             $(this).remove();
         });
     }, 4000);
+
 </script>
+
 <script>
+
     let currentDate = new Date();
     let months = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ];
+
     let day = currentDate.getDate();
     let month = months[currentDate.getMonth()];
     let year = currentDate.getFullYear();
+
     let formattedDate = `${month} ${day}, ${year}`;
     document.getElementById("current_date").innerHTML = formattedDate;
+
 </script>
+
+
 {% endblock %}

@@ -5,28 +5,15 @@
     .field-set input[type="file"] {
         display: none;
     }
-    .profile-image {
-        height: 150px !important;
-        width: 150px !important;
-    }
-</style>
 
+</style>
 <div class="main-content">
     <div class="container-fluid">
-        <div id="error-container">
-            {% if messages %}
-            <div class="alert alert-danger" role="alert">
-                {% for message in messages %}
-                {{ message }}
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
         <div class="top-hd-table">
             <div class="overview-wrap">
                 <div class="back-main">
                     <div class="">
-                        <a href="{% url 'NotificationLists' %}"><i class="fa fa-caret-left"></i></a>
+                        <a href="{% url 'AdminDashboard' %}"><i class="fa fa-caret-left"></i></a>
                     </div>
                     <div class="">
                         <h6>Edit Profile</h6>
@@ -47,10 +34,9 @@
                                         <label for="image" class="imageee">Update Image:
                                             <div class="profile-image" id="front_images3">
                                                 {% if user.image %}
-                                                <img src="{{ user.image.url }}" alt="User Image" style="height: 100%;"
-                                                    id="front_image3">
+                                                <img src="{{ user.image.url }}" alt="User Image" id="front_image3">
                                                 {% else %}
-                                                <img src="{{ default.png.url }}" alt="User Image" id="front_image3">
+                                                <img src="{% static 'dashboard/images/icon/default.png' %}" alt="User Image" id="front_image3">
                                                 {% endif %}
                                             </div>
                                         </label>

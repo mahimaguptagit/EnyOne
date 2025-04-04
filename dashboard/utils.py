@@ -48,6 +48,7 @@ def send_acknowleadgemnet_confirm(email,refernce_number,userdata):
         send_mail(subject,message,from_email,[email])
         admindata=User.objects.filter(is_superuser=True,is_admin=True).first()
         Notification.objects.create(sender=admindata,receiver=userdata,notification_title=subject,notification_description=message)
+        Notification.objects.create(sender=userdata,receiver=admindata,notification_title=subject,notification_description=message)
         registration_token = userdata.phone_verify  
         print(f"User FCM Token: {registration_token}")
         if registration_token:  

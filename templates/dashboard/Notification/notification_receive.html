@@ -6,15 +6,6 @@
 
 <div class="main-content">
   <div class="container-fluid">
-    <div id="error-container">
-      {% if messages %}
-      <div class="alert alert-danger" role="alert">
-        {% for message in messages %}
-        {{ message }}
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
     <div class="row">
       <div class="col-md-12">
         <div class="cards_head">
@@ -48,10 +39,13 @@
                   <tr>
                     <td>{{forloop.counter}}</td>
                     <td>{{data.receiver.username}}</td>
-                    <td>{{data.notification_title}}</td>
-                    <td>{{data.notification_description}}</td>
+                    <td>{{data.notification_title|truncatewords:3}}</td>
+                    <td>{{data.notification_description|truncatewords:3}}</td>
                     <td>{{data.created_at}}</td>
-                    <td>Action</td>
+                    <td><a href="{% url 'DeleteAdminNotification' data.id %}"
+                      onclick="return confirm('Are you sure you want to delete..');">
+                      <i class="fas fa-trash-alt"></i>
+                    </td></td>
                   </tr>
                   {% endfor %}
                 </tbody>

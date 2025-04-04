@@ -95,15 +95,6 @@
 
 <div class="main-content">
     <div class="container-fluid">
-        <div id="error-container">
-            {% if messages %}
-            <div class="alert alert-danger" role="alert">
-                {% for message in messages %}
-                {{ message }}
-                {% endfor %}
-            </div>
-            {% endif %}
-        </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="dash-hd">
@@ -207,22 +198,7 @@
 
 </script>
 
-<script>
 
-    let currentDate = new Date();
-    let months = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-
-    let day = currentDate.getDate();
-    let month = months[currentDate.getMonth()];
-    let year = currentDate.getFullYear();
-
-    let formattedDate = `${month} ${day}, ${year}`;
-    document.getElementById("current_date").innerHTML = formattedDate;
-
-</script>
 
 
 {% endblock %}

@@ -9,6 +9,10 @@ from django.utils import timezone
 from django.contrib import messages
 from .admin import *
 from django.http import HttpResponse
+from django.db import IntegrityError
+import io
+from django.db.models import Q
+
 
 # Create your views here.
 
@@ -18,13 +22,9 @@ class AdminLoginView(View):
     def post(self,request):
         email=request.POST.get('username')
         password=request.POST.get('password')
-        print(email)
-        print(password)
         user= authenticate(request=request, email=email, password=password)
-        print(user)
         if user:
             user=User.objects.get(email=email)
-            print(user.username)
             dj_login(request,user)
             if user.is_superuser == True:
                 return redirect ('AdminDashboard')
@@ -43,25 +43,36 @@ class AdminUpdateProfileView(View):
         userdata=User.objects.get(id=id)
         return render(request,'dashboard/Admin/admin-profile.html',{'user':userdata})
     def post(self,request,id):
-        username=request.POST.get('username')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        image = request.FILES.get('image')
-        phone_number = request.POST.get('phone_number')
-        userdata=User.objects.get(id=id)
-        userdata.username=username
-        userdata.first_name=first_name
-        userdata.last_name=last_name
-        userdata.email=email
-        userdata.phone_number=phone_number
-        if image:
-            userdata.image=image
-        userdata.save()
-        if userdata.is_superuser == True:
-                return redirect ('AdminDashboard')
-        else:
-                return redirect('StaffDashboard')
+        try:
+            username=request.POST.get('username')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            email = request.POST.get('email')
+            image = request.FILES.get('image')
+            phone_number = request.POST.get('phone_number')
+            userdata=User.objects.get(id=id)
+            userdata.username=username
+            userdata.first_name=first_name
+            userdata.last_name=last_name
+            userdata.email=email
+            userdata.phone_number=phone_number
+            if image:
+                userdata.image=image
+            userdata.save()
+            if userdata.is_superuser == True:
+                    return redirect ('AdminDashboard')
+            else:
+                    return redirect('StaffDashboard')
+        except IntegrityError as e:
+                if 'phone_number' in str(e):
+                    messages.error(request, "This phone number is already in use. Please use a different phone number.")
+                elif 'email' in str(e):
+                    messages.error(request, "This email is already in use. Please use a different email.")
+                else:
+                    messages.error(request, "An error occurred during the registration process. Please try again.")
+                
+                return redirect ('AdminUpdateProfile',id=id)
+                
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class AdminChangePasswordView(View):
@@ -174,7 +185,7 @@ class StaffDashboardView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ManageUserView(View):
     def get(self,request):
-        userdata=User.objects.filter(is_superuser=False,is_admin=False).order_by('-id')
+        userdata=User.objects.filter(is_admin=False, company_id__isnull=False, company_id__gt=0,is_superuser=False,is_active=True).order_by('-id')
         return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata})
         # return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'active2':'active'})
     
@@ -188,20 +199,33 @@ class ShowUserDetailsView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')    
 class AddUserView(View):
     def get(self,request):
-        return render(request,'dashboard/User/add_userdata.html')
+        company_data=Company.objects.all()
+        return render(request,'dashboard/User/add_userdata.html',{'company_data':company_data})
     def post(self,request):
-        username=request.POST.get('username')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        image = request.FILES.get('image')
-        phone_number = request.POST.get('phone_number')
-        password = request.POST.get('password')
-        userdata=User.objects.create_user(username=username,first_name=first_name,last_name=last_name,email=email,image=image,phone_number=phone_number,password=password)
-        userdata.image=image
-        userdata.save()
-        messages.success(request,'User Created Successfully !!')
-        return redirect('ManageUserLists')
+        try:
+            username=request.POST.get('username')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            email = request.POST.get('email')
+            image = request.FILES.get('image')
+            phone_number = request.POST.get('phone_number')
+            password = request.POST.get('password')
+            company=request.POST.get('company')
+            userdata=User.objects.create_user(username=username,first_name=first_name,last_name=last_name,email=email,image=image,phone_number=phone_number,password=password)
+            userdata.image=image
+            userdata.company_id=company
+            userdata.save()
+            messages.success(request,'User Created Successfully !!')
+            return redirect('ManageUserLists')
+        except IntegrityError as e:
+                if 'phone_number' in str(e):
+                    messages.error(request, "This phone number is already in use. Please use a different phone number.")
+                elif 'email' in str(e):
+                    messages.error(request, "This email is already in use. Please use a different email.")
+                else:
+                    messages.error(request, "An error occurred during the registration process. Please try again.")
+                
+                return redirect ('ManageUserLists')
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ManageStaffView(View):
@@ -220,21 +244,30 @@ class AddStaffView(View):
     def get(self,request):
         return render(request,'dashboard/Staff/add_staff.html')
     def post(self,request):
-        username=request.POST.get('username')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        image = request.FILES.get('image')
-        phone_number = request.POST.get('phone_number')
-        password = request.POST.get('password')
-        solveticket_title=request.POST.get('solveticket_title')
-        userdata=User.objects.create_user(username=username,first_name=first_name,last_name=last_name,email=email,image=image,phone_number=phone_number,password=password)
-        userdata.solveticket_title=solveticket_title
-        userdata.image=image
-        userdata.is_admin=True
-        userdata.save()
-        messages.success(request,'Staff Created Successfully !!')
-        return redirect('ManageStaff')
+        try:
+            username=request.POST.get('username')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            email = request.POST.get('email')
+            image = request.FILES.get('image')
+            phone_number = request.POST.get('phone_number')
+            password = request.POST.get('password')
+            solveticket_title=request.POST.get('solveticket_title')
+            userdata=User.objects.create_user(username=username,first_name=first_name,last_name=last_name,email=email,image=image,phone_number=phone_number,password=password)
+            userdata.solveticket_title=solveticket_title
+            userdata.image=image
+            userdata.is_admin=True
+            userdata.save()
+            messages.success(request,'Staff Created Successfully !!')
+            return redirect('ManageStaff')
+        except IntegrityError as e:
+                if 'phone_number' in str(e):
+                    messages.error(request, "This phone number is already in use. Please use a different phone number.")
+                elif 'email' in str(e):
+                    messages.error(request, "This email is already in use. Please use a different email.")
+                else:
+                    messages.error(request, "An error occurred during the registration process. Please try again.")
+                    return redirect('ManageStaff')
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class UpdateStaffDetailsView(View):
@@ -242,25 +275,34 @@ class UpdateStaffDetailsView(View):
         userdata=User.objects.get(id=id)
         return render(request,'dashboard/Staff/edit_staff.html',{'user':userdata,'active2':'active'})
     def post(self,request,id):
-        username=request.POST.get('username')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        image = request.FILES.get('image')
-        phone_number = request.POST.get('phone_number')
-        solveticket_title=request.POST.get('solveticket_title')
-        userdata=User.objects.get(id=id)
-        userdata.username=username
-        userdata.first_name=first_name
-        userdata.last_name=last_name
-        userdata.email=email
-        userdata.phone_number=phone_number
-        userdata.solveticket_title=solveticket_title
-        if image:
-            userdata.image=image
-        userdata.save()
-        messages.success(request,'Staff Updated Successfully !!')
-        return redirect('ManageStaff')
+        try :
+            username=request.POST.get('username')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            email = request.POST.get('email')
+            image = request.FILES.get('image')
+            phone_number = request.POST.get('phone_number')
+            solveticket_title=request.POST.get('solveticket_title')
+            userdata=User.objects.get(id=id)
+            userdata.username=username
+            userdata.first_name=first_name
+            userdata.last_name=last_name
+            userdata.email=email
+            userdata.phone_number=phone_number
+            userdata.solveticket_title=solveticket_title
+            if image:
+                userdata.image=image
+            userdata.save()
+            messages.success(request,'Staff Updated Successfully !!')
+            return redirect('ManageStaff')
+        except IntegrityError as e:
+                if 'phone_number' in str(e):
+                    messages.error(request, "This phone number is already in use. Please use a different phone number.")
+                elif 'email' in str(e):
+                    messages.error(request, "This email is already in use. Please use a different email.")
+                else:
+                    messages.error(request, "An error occurred during the registration process. Please try again.")
+                    return redirect('ManageStaff')
 
 class DeleteStaffDetailsView(View):
     def get(self,request,id):
@@ -274,7 +316,7 @@ class RaiseTicketListView(View):
             ticketdata=Ticket.objects.all().order_by('-id')
         else:
             ticketdata=Ticket.objects.filter(assigned_request=request.user).order_by('-id')
-        return render(request,'dashboard/raise_ticket/show_ticketlist.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
+        return render(request,'dashboard/raise_ticket/show_ticketlist.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active','bright1':'headbuttonactive'}) 
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseIssueListView(View):
@@ -283,7 +325,7 @@ class RaiseIssueListView(View):
             ticketdata=Ticket.objects.filter(ticket_type='Issue').order_by('-id')
         else:
             ticketdata=Ticket.objects.filter(assigned_request=request.user,ticket_type='Issue').order_by('-id')
-        return render(request,'dashboard/raise_ticket/show_all_issue.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
+        return render(request,'dashboard/raise_ticket/show_all_issue.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active','bright2':'headbuttonactive'}) 
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseRequestListView(View):
@@ -292,7 +334,7 @@ class RaiseRequestListView(View):
             ticketdata=Ticket.objects.filter(ticket_type='Request').order_by('-id')
         else:
             ticketdata=Ticket.objects.filter(assigned_request=request.user,ticket_type='Request').order_by('-id')
-        return render(request,'dashboard/raise_ticket/show_all_request.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active'}) 
+        return render(request,'dashboard/raise_ticket/show_all_request.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active','bright3':'headbuttonactive'}) 
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class TicketDetailPageView(View):
@@ -310,43 +352,83 @@ class TicketUpdateDetailsView(View):
         assigned_data=request.POST.get('assigned_data')
         submission_status=request.POST.get('submission_status')
         ticket_data=Ticket.objects.get(id=id)
-        userdata=User.objects.filter(id=assigned_data,is_admin=True).first()
-        currentdatetime=timezone.now()
+        current_datetime=timezone.now()
         if assigned_data:
-            if submission_status == 'Resolved':
-                messages.success(request,'First Assign Ticket')
+            userdata = User.objects.filter(id=assigned_data, is_admin=True).first()
+            if not userdata:
+                messages.error(request, 'Invalid Staff selected!')
                 return redirect('TicketUpdateDetails', id=id)
-            elif submission_status == 'In Progress':
-                ticket_data.assigned_request=userdata
-                ticket_data.is_assign=True
-                ticket_data.submission_status=submission_status
-                ticket_data.save()
-                messages.success(request,'Ticket Data Updated')
-                return redirect('RaiseTicketList')
-            else:
-                messages.error(request,'Ticket already received !!')
+            if ticket_data.is_assign:
+                messages.error(request, 'This ticket is already assigned!')
                 return redirect('TicketUpdateDetails', id=id)
-        else:
-            if submission_status == 'Resolved':
-                if ticket_data.is_assign == True:
-                    if ticket_data.submission_status == 'Resolved':
-                        messages.error(request,'Already Resolved')
-                        return redirect('TicketUpdateDetails', id=id)
-                    ticket_data.solved_date=currentdatetime
-                    ticket_data.submission_status=submission_status
-                    ticket_data.save()
-                    send_resolved_ticket(ticket_data.user.email,ticket_data.ticket_number,ticket_data.user)
-                    messages.success(request,'Ticket Data Updated')
-                    return redirect('RaiseTicketList')
-                else:
-                    messages.success(request,'First Assign Ticket')
-                    return redirect('TicketUpdateDetails', id=id)
-            elif submission_status == 'In Progress' : 
-                    messages.error(request,'Already Assign')
-                    return redirect('TicketUpdateDetails', id=id)
-            else:
-                messages.error(request,'Ticket already received !!')
+            ticket_data.assigned_request = userdata
+            ticket_data.is_assign = True
+            ticket_data.submission_status = 'In Progress'
+            ticket_data.save()
+            messages.success(request, 'Ticket Assigned Successfully!')
+            return redirect('RaiseTicketList')
+        if submission_status == 'Resolved':
+            if not ticket_data.is_assign:
+                messages.error(request, 'First assign the ticket!')
                 return redirect('TicketUpdateDetails', id=id)
+            if ticket_data.submission_status == 'Resolved':
+                messages.error(request, 'Ticket is already resolved!')
+                return redirect('TicketUpdateDetails', id=id)
+            ticket_data.solved_date = current_datetime
+            ticket_data.submission_status = 'Resolved'
+            ticket_data.save()
+            send_resolved_ticket(ticket_data.user.email, ticket_data.ticket_number, ticket_data.user)
+            messages.success(request, 'Ticket marked as resolved!')
+            return redirect('RaiseTicketList')
+        elif submission_status == 'In Progress':
+            if not ticket_data.is_assign:
+                messages.error(request, 'First assign the ticket!')
+                return redirect('TicketUpdateDetails', id=id)
+        messages.error(request, 'Invalid action!')
+        return redirect('TicketUpdateDetails', id=id)
+        # if assigned_data:
+        #         userdata=User.objects.filter(id=assigned_data,is_admin=True).first()
+        #         ticket_data.assigned_request=userdata
+        #         ticket_data.is_assign=True
+        #         ticket_data.submission_status='In Progress'
+        #         ticket_data.save()
+        #         messages.success(request,'Ticket Data Updated')
+        #         return redirect('RaiseTicketList')
+
+            # if submission_status == 'Resolved':
+            #     messages.success(request,'First Assign Ticket')
+            #     return redirect('TicketUpdateDetails', id=id)
+            # elif submission_status == 'In Progress':
+            #     ticket_data.assigned_request=userdata
+            #     ticket_data.is_assign=True
+            #     ticket_data.submission_status=submission_status
+            #     ticket_data.save()
+            #     messages.success(request,'Ticket Data Updated')
+            #     return redirect('RaiseTicketList')
+            # else:
+            #     messages.error(request,'Ticket already received !!')
+            #     return redirect('TicketUpdateDetails', id=id)
+        # else:
+        #     if submission_status == 'Resolved':
+        #         if ticket_data.is_assign == True:
+        #             if ticket_data.submission_status == 'Resolved':
+        #                 messages.error(request,'Already Resolved')
+        #                 return redirect('TicketUpdateDetails', id=id)
+        #             ticket_data.solved_date=currentdatetime
+        #             ticket_data.submission_status=submission_status
+        #             ticket_data.save()
+        #             send_resolved_ticket(ticket_data.user.email,ticket_data.ticket_number,ticket_data.user)
+        #             messages.success(request,'Ticket Data Updated')
+        #             return redirect('RaiseTicketList')
+        #         else:
+        #             messages.success(request,'First Assign Ticket')
+        #             return redirect('TicketUpdateDetails', id=id)
+        #     elif submission_status == 'In Progress' : 
+        #             messages.error(request,'Already Assign')
+        #             return redirect('TicketUpdateDetails', id=id)
+        #     else:
+        #         messages.error(request,'Ticket already received !!')
+        #         return redirect('TicketUpdateDetails', id=id)
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class TicketParticularDeleteView(View):
@@ -391,8 +473,10 @@ class NotificationreceiveView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class AddNotificationView(View):
     def get(self,request):
-        userdatas=User.objects.filter(is_superuser=False,is_active=True)
-        return render(request,'dashboard/Notification/add_notification.html',{'user_datas':userdatas})
+        userdatas = User.objects.filter(Q(is_admin=True) | Q(is_admin=False, company_id__isnull=False, company_id__gt=0),is_superuser=False,is_active=True)
+        staffdata=User.objects.filter(is_admin=True,is_superuser=False,is_active=True)
+        clientdata = User.objects.filter(is_admin=False,is_active=True).exclude(company_id__isnull=True).exclude(company_id=0)
+        return render(request,'dashboard/Notification/add_notification.html',{'user_datas':userdatas,'staffdatas':staffdata,'clientdatas':clientdata})
     def post(self,request):
         notification_title=request.POST.get('title')
         notification_description=request.POST.get('description')

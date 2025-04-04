@@ -14,6 +14,7 @@ import json
 from collections import defaultdict
 from datetime import datetime, timedelta
 import requests
+from django.db.models import Count
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -80,6 +81,16 @@ class UserLoginView(APIView):
                 return Response({'status': 'false', 'message': 'Check RestAPI'})
 
         return Response({'status': 'false', 'message': 'Failed to connect to test API'})
+        # userdata = User.objects.filter(is_superuser=False, email=username,is_admin=False).first()
+        # userdata.phone_verify=phone_verify
+        # userdata.save()
+                            
+        # if userdata:
+        #     login(request, userdata)
+        #     token = get_tokens_for_user(userdata)  
+        #     return Response({'status': 'true', 'access_token': token, 'message': 'LogIn Successfully','data': 'data', 'working_logo_url':'url', 'show_logo':userdata.logoappearance })
+        # else:
+        #     return Response({'status': 'false', 'message': 'Please Check User Details !!'})
     
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -206,6 +217,18 @@ class ShowRaisedTicketDataView(APIView):
             ticket_datas=Ticket.objects.filter(user=request.user,ticket_type=ticket_type).order_by('-id')
         else:
             ticket_datas=Ticket.objects.filter(user=request.user).order_by('-id')
+
+        unread_chat_counts = (
+            ChatTicketDetails.objects.filter(
+                ticket_number__user=request.user,
+                is_delete=False,
+                is_reader=False
+            )
+            .values('ticket_number_id')
+            .annotate(unread_count=Count('id'))
+        )
+        unread_chat_dict = {entry['ticket_number_id']: entry['unread_count'] for entry in unread_chat_counts}
+
         userdata=request.user.id
         print(userdata)
         ticketdetails=[{
@@ -224,6 +247,7 @@ class ShowRaisedTicketDataView(APIView):
             "solved_date": ticket_data.solved_date.strftime('%Y-%m-%d %H:%M:%S') if ticket_data.solved_date else None,
             "ticket_type":ticket_data.ticket_type, 
             "is_feedback":ticket_data.is_feedback,
+            "unread_chat_count": unread_chat_dict.get(ticket_data.id, 0)
         }
         for ticket_data in ticket_datas
         ]
@@ -396,20 +420,23 @@ class ShowTicketChatView(APIView):
         return Response({'status': 'true', 'msg': 'Chat Details', "data": chat_data_dict.values()})
     
 
-# class TicketChatNumberView(APIView):
-#     permission_classes = [IsAuthenticated]
-#     def post(self, request, format=None):
-#         ticket_id=request.data.get('ticket_id')
-#         if not ticket_id :
-#             return Response({'status':'false','message':'Please add required field !!'})
-#         chat_count=0
-#         chat_datas = ChatTicketDetails.objects.filter(ticket_number=ticket_id,is_delete=False,reader=False).order_by('-created_at')
-#         for data in chat_datas:
-#             if chat_datas.user == request.user:
-#                 chat_count=chat_count
-#             else:
-#                 chat_count+=chat_count
-#         return Response({'status':'true','msg':'Notification Count','count':notification_read})
+class TicketChatNumberView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        ticket_id=request.data.get('ticket_id')
+        chat_counts = ChatTicketDetails.objects.filter(
+                ticket_number__user=request.user, 
+                ticket_number__id=ticket_id,
+                is_delete=False, 
+                is_reader=False
+            )
+        
+        return Response({
+            'status': 'true',
+            'msg': 'Chat Count',
+            'ticket_id':ticket_id,
+            'count': chat_counts.count()  
+        })
     
 class ParticularTicketChatDeleteView(APIView):
     permission_classes = [IsAuthenticated]
@@ -613,7 +640,7 @@ class SalesPerHourWeeklyView(APIView):
             return Response({'status': 'false', 'message': 'All Fields Required'})
 
         try:
-            min_date=datetime.strptime(max_date_str, "%Y-%m-%d") - timedelta(days=7)
+            min_date=datetime.strptime(max_date_str, "%Y-%m-%d") - timedelta(days=6)
             max_date = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)  
         except ValueError:
             return Response({'status': 'false', 'message': 'Invalid date format. Use YYYY-MM-DD'})
@@ -1465,7 +1492,7 @@ class CustomerGraphNumberOfCustomerPerHourWeeklyView(APIView):
 
         try:
             max_date = datetime.strptime(max_date_str, "%Y-%m-%d")
-            min_date = max_date - timedelta(days=7)
+            min_date = max_date - timedelta(days=6)
             max_date = max_date.replace(hour=23, minute=59, second=59)  
         except ValueError:
             return Response({'status': 'false', 'message': 'Invalid date format. Use YYYY-MM-DD'})
