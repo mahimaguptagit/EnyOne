@@ -81,16 +81,6 @@ class UserLoginView(APIView):
                 return Response({'status': 'false', 'message': 'Check RestAPI'})
 
         return Response({'status': 'false', 'message': 'Failed to connect to test API'})
-        # userdata = User.objects.filter(is_superuser=False, email=username,is_admin=False).first()
-        # userdata.phone_verify=phone_verify
-        # userdata.save()
-                            
-        # if userdata:
-        #     login(request, userdata)
-        #     token = get_tokens_for_user(userdata)  
-        #     return Response({'status': 'true', 'access_token': token, 'message': 'LogIn Successfully','data': 'data', 'working_logo_url':'url', 'show_logo':userdata.logoappearance })
-        # else:
-        #     return Response({'status': 'false', 'message': 'Please Check User Details !!'})
     
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]

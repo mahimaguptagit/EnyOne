@@ -34,8 +34,8 @@
     .notification-count {
         display: none;
         position: absolute;
-        top: 6px;
-        right: 135px;
+        top: 19px;
+        margin-right: 10px;
         background-color: red;
         color: white;
         font-size: 12px;
@@ -143,7 +143,14 @@
                                 <a href="{% url 'Notificationreceive' %}">
                                     <div class="notification-icon">
                                         <i class="fas fa-bell" style="font-weight: bold; color:#5e5873;"></i>
+                                        {% if unreadnotificationcount > 0 %}
+                                        <span class="notification-count">
+                                            {{ unreadnotificationcount }}
+                                        </span>
+                                        {% endif %}
                                     </div>
+                                   
+                                        
                                 </a>
                                 
                                 <div class="account-wrap">

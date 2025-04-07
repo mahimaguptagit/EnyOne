@@ -11,6 +11,7 @@ from .admin import *
 from django.http import HttpResponse
 from django.db import IntegrityError
 import io
+import os
 from django.db.models import Q
 
 
@@ -27,21 +28,23 @@ class AdminLoginView(View):
             user=User.objects.get(email=email)
             dj_login(request,user)
             if user.is_superuser == True:
+                messages.success(request, 'Log In Successfully..!!')
                 return redirect ('AdminDashboard')
             else:
+                messages.success(request, 'Log In Successfully..!!')
                 return redirect('StaffDashboard')
         return redirect('AdminLogin')
     
 def admin_logout(request):
     dj_logout(request)
-    messages.success(request, 'Admin Logged Out Successfully..!!')
     return redirect('AdminLogin')
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class AdminUpdateProfileView(View):
     def get(self,request,id):
         userdata=User.objects.get(id=id)
-        return render(request,'dashboard/Admin/admin-profile.html',{'user':userdata})
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/Admin/admin-profile.html',{'user':userdata,'unreadnotificationcount':notificationcount})
     def post(self,request,id):
         try:
             username=request.POST.get('username')
@@ -70,14 +73,14 @@ class AdminUpdateProfileView(View):
                     messages.error(request, "This email is already in use. Please use a different email.")
                 else:
                     messages.error(request, "An error occurred during the registration process. Please try again.")
-                
                 return redirect ('AdminUpdateProfile',id=id)
                 
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class AdminChangePasswordView(View):
     def get(self,request):
-        return render(request,'dashboard/Admin/admin-change-password.html')
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/Admin/admin-change-password.html',{'unreadnotificationcount':notificationcount})
     def post(self,request):
         old_password=request.POST.get('old_password')
         password=request.POST.get('password')
@@ -163,44 +166,44 @@ class AdminDashboardView(View):
     def get(self,request):
         ticketdata=Ticket.objects.all().count()
         ticketfeedbackcount=TicketFeedback.objects.all().count()
-        # customerdata=User.objects.filter(is_admin=False,is_superuser=False).count()
-        customerdata=User.objects.filter(is_superuser=False,is_admin=False).count()
+        customerdata=User.objects.filter(is_admin=False, company_id__isnull=False, company_id__gt=0,is_superuser=False,is_active=True).count()
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
         # clientdata=Client.objects.all()
         # customerdata=Client.objects.all().count()
         # print(clientdata)
-        return render(request,'dashboard/Admin/index.html',{'active1':'active','ticketdatacount':ticketdata,'customerdatacount':customerdata,'ticketfeedbackcount':ticketfeedbackcount})
+        return render(request,'dashboard/Admin/index.html',{'active1':'active','ticketdatacount':ticketdata,'customerdatacount':customerdata,'ticketfeedbackcount':ticketfeedbackcount,'unreadnotificationcount':notificationcount})
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class StaffDashboardView(View):
     def get(self,request):
         ticketdata=Ticket.objects.filter(assigned_request=request.user).count()
         ticketfeedbackcount=TicketFeedback.objects.filter(ticket_id__assigned_request = request.user).count()
-        # customerdata=User.objects.filter(is_admin=False,is_superuser=False).count()
-        customerdata=User.objects.filter(is_superuser=False,is_admin=False).count()
-        # clientdata=Client.objects.all()
-        # customerdata=Client.objects.all().count()
-        # print(clientdata)
-        return render(request,'dashboard/Staff/staff_index.html',{'active03':'active','ticketdatacount':ticketdata,'customerdatacount':customerdata,'ticketfeedbackcount':ticketfeedbackcount})
+        customerdata=User.objects.filter(is_admin=False, company_id__isnull=False, company_id__gt=0,is_superuser=False,is_active=True).count()
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/Staff/staff_index.html',{'active03':'active','ticketdatacount':ticketdata,'customerdatacount':customerdata,'ticketfeedbackcount':ticketfeedbackcount,'unreadnotificationcount':notificationcount})
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ManageUserView(View):
     def get(self,request):
         userdata=User.objects.filter(is_admin=False, company_id__isnull=False, company_id__gt=0,is_superuser=False,is_active=True).order_by('-id')
-        return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata})
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'unreadnotificationcount':notificationcount})
         # return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'active2':'active'})
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ShowUserDetailsView(View):
     def get(self,request,id):
         userdata=User.objects.get(id=id)
-        return render(request,'dashboard/User/show_userdetails.html',{'user':userdata})
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/User/show_userdetails.html',{'user':userdata,'unreadnotificationcount':notificationcount})
         # return render(request,'dashboard/User/show_userdetails.html',{'user':userdata,'active2':'active'})
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')    
 class AddUserView(View):
     def get(self,request):
         company_data=Company.objects.all()
-        return render(request,'dashboard/User/add_userdata.html',{'company_data':company_data})
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/User/add_userdata.html',{'company_data':company_data,'unreadnotificationcount':notificationcount})
     def post(self,request):
         try:
             username=request.POST.get('username')
@@ -231,18 +234,21 @@ class AddUserView(View):
 class ManageStaffView(View):
     def get(self,request):
         userdata=User.objects.filter(is_superuser=False,is_admin=True).order_by('-id')
-        return render(request,'dashboard/Staff/staff_lists.html',{'userdatas':userdata,'active2':'active'})
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/Staff/staff_lists.html',{'userdatas':userdata,'active2':'active','unreadnotificationcount':notificationcount})
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ShowStaffDetailsView(View):
     def get(self,request,id):
         userdata=User.objects.get(id=id)
-        return render(request,'dashboard/Staff/show_staffdetails.html',{'user':userdata,'active2':'active'})
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/Staff/show_staffdetails.html',{'user':userdata,'active2':'active','unreadnotificationcount':notificationcount})
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')    
 class AddStaffView(View):
     def get(self,request):
-        return render(request,'dashboard/Staff/add_staff.html')
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/Staff/add_staff.html',{'unreadnotificationcount':notificationcount})
     def post(self,request):
         try:
             username=request.POST.get('username')
@@ -273,7 +279,8 @@ class AddStaffView(View):
 class UpdateStaffDetailsView(View):
     def get(self,request,id):
         userdata=User.objects.get(id=id)
-        return render(request,'dashboard/Staff/edit_staff.html',{'user':userdata,'active2':'active'})
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/Staff/edit_staff.html',{'user':userdata,'active2':'active','unreadnotificationcount':notificationcount})
     def post(self,request,id):
         try :
             username=request.POST.get('username')
@@ -306,7 +313,7 @@ class UpdateStaffDetailsView(View):
 
 class DeleteStaffDetailsView(View):
     def get(self,request,id):
-        userdata=User.objects.get(id=id).delete()
+        User.objects.get(id=id).delete()
         return redirect('ManageStaff')
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
@@ -316,7 +323,8 @@ class RaiseTicketListView(View):
             ticketdata=Ticket.objects.all().order_by('-id')
         else:
             ticketdata=Ticket.objects.filter(assigned_request=request.user).order_by('-id')
-        return render(request,'dashboard/raise_ticket/show_ticketlist.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active','bright1':'headbuttonactive'}) 
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/raise_ticket/show_ticketlist.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active','bright1':'headbuttonactive','unreadnotificationcount':notificationcount}) 
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseIssueListView(View):
@@ -325,7 +333,8 @@ class RaiseIssueListView(View):
             ticketdata=Ticket.objects.filter(ticket_type='Issue').order_by('-id')
         else:
             ticketdata=Ticket.objects.filter(assigned_request=request.user,ticket_type='Issue').order_by('-id')
-        return render(request,'dashboard/raise_ticket/show_all_issue.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active','bright2':'headbuttonactive'}) 
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/raise_ticket/show_all_issue.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active','bright2':'headbuttonactive','unreadnotificationcount':notificationcount}) 
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseRequestListView(View):
@@ -334,20 +343,41 @@ class RaiseRequestListView(View):
             ticketdata=Ticket.objects.filter(ticket_type='Request').order_by('-id')
         else:
             ticketdata=Ticket.objects.filter(assigned_request=request.user,ticket_type='Request').order_by('-id')
-        return render(request,'dashboard/raise_ticket/show_all_request.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active','bright3':'headbuttonactive'}) 
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/raise_ticket/show_all_request.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active','bright3':'headbuttonactive','unreadnotificationcount':notificationcount}) 
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class TicketDetailPageView(View):
     def get(self,request,id):
         ticket_data=Ticket.objects.get(id=id)
-        return render(request,'dashboard/raise_ticket/ticket_details.html',{'data':ticket_data,'active3':'active','active310':'active'})
+        is_pdf = is_doc = is_image = False
+        if ticket_data.ticket_file:
+            ext = os.path.splitext(ticket_data.ticket_file.name.lower())[1] 
+            if ext == ".pdf":
+                is_pdf = True
+            elif ext in [".doc", ".docx"]:
+                is_doc = True
+            elif ext in [".jpg", ".jpeg", ".png", ".gif", ".webp"]:
+                is_image = True
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/raise_ticket/ticket_details.html',{'data':ticket_data,'active3':'active','active310':'active','is_pdf': is_pdf,'is_doc': is_doc,'is_image': is_image,'unreadnotificationcount':notificationcount})
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch') 
 class TicketUpdateDetailsView(View):
     def get(self,request,id):
         ticket_data=Ticket.objects.get(id=id)
-        admindatas=User.objects.filter(solveticket_title=ticket_data.ticket_title)
-        return render(request,'dashboard/raise_ticket/ticketupdate_details.html',{'data':ticket_data,'active3':'active','active310':'active','admindata':admindatas})
+        admindatas=User.objects.filter(solveticket_title=ticket_data.ticket_title,is_admin=True,is_superuser=False)
+        is_pdf = is_doc = is_image = False
+        if ticket_data.ticket_file:
+            ext = os.path.splitext(ticket_data.ticket_file.name.lower())[1] 
+            if ext == ".pdf":
+                is_pdf = True
+            elif ext in [".doc", ".docx"]:
+                is_doc = True
+            elif ext in [".jpg", ".jpeg", ".png", ".gif", ".webp"]:
+                is_image = True
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/raise_ticket/ticketupdate_details.html',{'data':ticket_data,'active3':'active','active310':'active','admindata':admindatas,'is_pdf': is_pdf,'is_doc': is_doc,'is_image': is_image,'unreadnotificationcount':notificationcount})
     def post(self,request,id):
         assigned_data=request.POST.get('assigned_data')
         submission_status=request.POST.get('submission_status')
@@ -433,8 +463,10 @@ class TicketUpdateDetailsView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class TicketParticularDeleteView(View):
     def get(self,request,id):
-        TicketFeedback.objects.get(ticket_id=id).delete()
-        ticket_data=Ticket.objects.get(id=id).delete()
+        ticket_data=Ticket.objects.get(id=id)
+        if ticket_data: 
+            TicketFeedback.objects.filter(ticket_id=id).delete()
+            ticket_data.delete()
         return redirect('RaiseTicketList')
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
@@ -444,13 +476,23 @@ class TicketFeedbackView(View):
             ticketfeedbackdatas=TicketFeedback.objects.all().order_by('-id')
         else:
             ticketfeedbackdatas=TicketFeedback.objects.filter(ticket_id__assigned_request=request.user)
-        return render(request,'dashboard/raise_ticket/ticket_feedbacklists.html',{'tikcetfeedbackdata':ticketfeedbackdatas,'active311':'active','active3':'active'})
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/raise_ticket/ticket_feedbacklists.html',{'tikcetfeedbackdata':ticketfeedbackdatas,'active311':'active','active3':'active','unreadnotificationcount':notificationcount})
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')    
 class TicketFeedbackDetailPageView(View):
     def get(self,request,id):
         ticket_data=Ticket.objects.get(id=id)
-        return render(request,'dashboard/raise_ticket/showticketfeedbackdetails.html',{'data':ticket_data,'active3':'active','active311':'active'})
+        if ticket_data.ticket_file:
+            ext = os.path.splitext(ticket_data.ticket_file.name.lower())[1] 
+            if ext == ".pdf":
+                is_pdf = True
+            elif ext in [".doc", ".docx"]:
+                is_doc = True
+            elif ext in [".jpg", ".jpeg", ".png", ".gif", ".webp"]:
+                is_image = True
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/raise_ticket/showticketfeedbackdetails.html',{'data':ticket_data,'active3':'active','active311':'active','is_pdf': is_pdf,'is_doc': is_doc,'is_image': is_image,'unreadnotificationcount':notificationcount})
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class TicketFeedbackDeleteView(View):
@@ -461,14 +503,19 @@ class TicketFeedbackDeleteView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class NotificationListsView(View):
     def get(self,request):
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
         notificationdata=Notification.objects.filter(sender=request.user).order_by('-id')
-        return render(request,'dashboard/Notification/notification_list.html',{'active4':'active','notifidetails':notificationdata})
+        return render(request,'dashboard/Notification/notification_list.html',{'active4':'active','notifidetails':notificationdata,'unreadnotificationcount':notificationcount})
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class NotificationreceiveView(View):
     def get(self,request):
+        notificationcount=0
         notifidata=Notification.objects.filter(receiver=request.user).order_by('-id')
-        return render(request,'dashboard/Notification/notification_receive.html',{'notifidatas':notifidata})
+        for notif in notifidata:
+                notif.reader=True
+                notif.save()
+        return render(request,'dashboard/Notification/notification_receive.html',{'notifidatas':notifidata,'unreadnotificationcount':notificationcount})
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')   
 class AddNotificationView(View):
@@ -476,12 +523,12 @@ class AddNotificationView(View):
         userdatas = User.objects.filter(Q(is_admin=True) | Q(is_admin=False, company_id__isnull=False, company_id__gt=0),is_superuser=False,is_active=True)
         staffdata=User.objects.filter(is_admin=True,is_superuser=False,is_active=True)
         clientdata = User.objects.filter(is_admin=False,is_active=True).exclude(company_id__isnull=True).exclude(company_id=0)
-        return render(request,'dashboard/Notification/add_notification.html',{'user_datas':userdatas,'staffdatas':staffdata,'clientdatas':clientdata})
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
+        return render(request,'dashboard/Notification/add_notification.html',{'user_datas':userdatas,'staffdatas':staffdata,'clientdatas':clientdata,'unreadnotificationcount':notificationcount})
     def post(self,request):
         notification_title=request.POST.get('title')
         notification_description=request.POST.get('description')
         selected_users = request.POST.getlist('selected_users')
-        # push_service = FCMNotification(api_key=settings.SERVER_KEY)
         recipients = User.objects.filter(pk__in=selected_users,is_active=True)
         for recipient in recipients:
             Notification.objects.create(notification_title=notification_title,notification_description=notification_description,sender=request.user,receiver=recipient)
@@ -509,8 +556,9 @@ class DeleteAdminParticularNotificationView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ChatSendReceiveView(View):
     def get(self,request,id):
+        notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
         chatdatas=ChatTicketDetails.objects.filter(ticket_number=id)
-        return render(request,'dashboard/Chat/chatsend.html',{'chatdetails':chatdatas})
+        return render(request,'dashboard/Chat/chatsend.html',{'chatdetails':chatdatas,'unreadnotificationcount':notificationcount})
     def post(self,request,id):
         message=request.POST.get('message')
         ticket_data=Ticket.objects.filter(id=id).first()
@@ -526,7 +574,6 @@ class ChatSendReceiveView(View):
                 print("Error: No FCM token found for the user.")
         return redirect('ChatSendReceive' , id=id)
     
-
 class ExportAllTicketView(View):
     def get(self,request):
         if request.user.is_superuser:

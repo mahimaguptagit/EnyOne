@@ -34,8 +34,18 @@
                                             <div class="profile-image" id="front_images3">
                                                 {% if data.ticket_file %}
                                                 <a href="{{ data.ticket_file.url }}">
-                                                <img src="{{ data.ticket_file.url }}" alt="Optional File"
-                                                    style="height: 100%;" id="front_image3"></a>
+                                                    {% if is_pdf %}
+                                                    <img src="{% static 'dashboard/images/icon/image.png' %}"
+                                                        alt="PDF File" id="front_image3">
+                                                    {% elif is_doc %}
+                                                    <img src="{% static 'dashboard/images/icon/image.png' %}" alt="DOC File" id="front_image3">
+                                                    {% elif is_image %}
+                                                    <img src="{{ data.ticket_file.url }}" id="front_image3" alt="Image File" >
+                                                    {% else %}
+                                                    <img src="{% static 'dashboard/images/icon/default.png' %}"
+                                                    alt="Optional File" id="front_image3">
+                                                    {% endif %}
+                                                </a>
                                                 {% else %}
                                                 <img src="{% static 'dashboard/images/icon/default.png' %}" alt="Optional File" id="front_image3">
                                                 {% endif %}

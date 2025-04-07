@@ -181,7 +181,6 @@
                 <div class="card-header">
                     <div class="msger-header-title">
                         <a href="{% url 'RaiseTicketList' %}"><i class="fa fa-caret-left"></i>Customer support</a>
-                        <!-- <i class="fas fa-comment-alt"></i> -->
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -196,7 +195,11 @@
                                 <main class="msger-chat">
                                     {% if data.user == request.user %}
                                         <div class="msg right-msg">
+                                            {% if data.user.image %}
                                             <div class="msg-img" style="background-image: url({{data.user.image.url}})"></div>
+                                            {% else %}
+                                            <div class="msg-img" style="background-image: url('{% static "dashboard/images/icon/default.png" %}')"></div>
+                                            {% endif %}
                                             <div class="msg-bubble">
                                                 <div class="msg-info">
                                                     <div class="msg-info-name">You</div>
@@ -209,7 +212,11 @@
                                         </div>
                                     {% else %}
                                         <div class="msg left-msg">
-                                            <div class="msg-img" style="background-image: url({{data.user.image.url}})"></div>
+                                            {% if data.user.image %}
+                                            <div class="msg-img"style="background-image: url({{data.user.image.url}})"></div>
+                                            {% else %}
+                                            <div class="msg-img"style="background-image: url('{% static "dashboard/images/icon/default.png" %}')"></div>
+                                            {% endif %}
                                             <div class="msg-bubble">
                                                 <div class="msg-info">
                                                     <div class="msg-info-name">{{data.user.username}}</div>
@@ -237,15 +244,23 @@
 </div>
 
 <script>
-    // Function to scroll chat to the bottom
     function scrollToBottom() {
         var chatContainer = document.querySelector(".scroll-chat");
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
-
-    // Automatically scroll to the bottom when the page is loaded
     document.addEventListener("DOMContentLoaded", function () {
         scrollToBottom();
     });
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector(".msger-inputarea");
+        const input = document.querySelector(".msger-input");
+
+        form.addEventListener("submit", function (e) {
+            setTimeout(() => {
+                input.value = "";
+            }, 100); 
+        });
+    });
+
 </script>
 {% endblock content %}

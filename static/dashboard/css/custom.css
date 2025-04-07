@@ -374,9 +374,9 @@ input:checked + .slider:before {
 } */
 
 .profile-image img {
-  height: 130px;
+  height:60px;
   cursor: pointer;
-  width: 130px;
+  width: 60px;
   object-fit: cover;
   border-radius: 50%;
 }
