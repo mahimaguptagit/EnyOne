@@ -28,6 +28,10 @@ class UserLoginView(APIView):
 
         if not username or not password or not phone_verify:
             return Response({'status': 'false', 'message': 'Both username and password are required.'})
+        
+        userdata = User.objects.filter(is_admin=False, email=username).first()
+        if not userdata:
+            return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
 
         url = 'https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/test/'
         headers = {
@@ -78,9 +82,9 @@ class UserLoginView(APIView):
                     return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
 
             else:
-                return Response({'status': 'false', 'message': 'Check RestAPI'})
+                return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
 
-        return Response({'status': 'false', 'message': 'Failed to connect to test API'})
+        return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
     
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
