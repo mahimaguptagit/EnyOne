@@ -88,10 +88,13 @@ class UserLoginView(APIView):
     
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request,format=None):
+    def post(self, request,format=None):
+        phone_verify = request.data.get('device_id')
         userdata=User.objects.filter(id=request.user.id).first()
         if not userdata:
             return Response({'status':'false','message':'User data not found !!'})
+        userdata.phone_verify=phone_verify
+        userdata.save()
         url1 = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/validate-email/?email={userdata.email}"
 
         headers = {
