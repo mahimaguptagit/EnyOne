@@ -482,7 +482,8 @@ class TicketFeedbackView(View):
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')    
 class TicketFeedbackDetailPageView(View):
     def get(self,request,id):
-        ticket_data=Ticket.objects.get(id=id)
+        ticketfeedbackdata=TicketFeedback.objects.filter(id=id).first()
+        ticket_data=Ticket.objects.get(id=ticketfeedbackdata.ticket_id.id)
         if ticket_data.ticket_file:
             ext = os.path.splitext(ticket_data.ticket_file.name.lower())[1] 
             if ext == ".pdf":
