@@ -484,6 +484,7 @@ class TicketFeedbackDetailPageView(View):
     def get(self,request,id):
         ticketfeedbackdata=TicketFeedback.objects.filter(id=id).first()
         ticket_data=Ticket.objects.get(id=ticketfeedbackdata.ticket_id.id)
+        is_pdf = is_doc = is_image = False
         if ticket_data.ticket_file:
             ext = os.path.splitext(ticket_data.ticket_file.name.lower())[1] 
             if ext == ".pdf":
