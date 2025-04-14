@@ -335,6 +335,8 @@ class RaiseIssueListView(View):
             ticketdata=Ticket.objects.filter(assigned_request=request.user,ticket_type='Issue').order_by('-id')
         notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
         return render(request,'dashboard/raise_ticket/show_all_issue.html',{'ticketdetails':ticketdata,'active3':'active','active310':'active','bright2':'headbuttonactive','unreadnotificationcount':notificationcount}) 
+
+clientdata=User.objects.filter(isadmin=False)
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class RaiseRequestListView(View):
