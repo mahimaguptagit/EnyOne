@@ -502,7 +502,6 @@ class SalesGraphDataByStaffView(APIView):
                 try:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
                     if min_date <= sale_date <= max_date:
-                        print(f"Including sale for {staff_code}: {sale_quantity}, Date: {sale_date}")
                         staff_sales_summary[staff_code] += sale_quantity * tax_amount
                 except ValueError:
                     continue
@@ -558,7 +557,6 @@ class SalesGraphDataBySalesChannelView(APIView):
                 try:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
                     if min_date <= sale_date <= max_date:
-                        print(f"Including sale for {channel_code}: {sale_quantity}, Date: {sale_date}")
                         channel_sales_summary[channel_code] += sale_quantity * tax_amount
                 except ValueError:
                     continue
@@ -657,20 +655,21 @@ class SalesPerHourWeeklyView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
         
-        sales_per_hour = defaultdict(lambda: {'total_quantity': 0, 'total_tax_amount': 0})
+        sales_per_hour = defaultdict(lambda: {'CA': 0.0})
 
         for sale in sales_data:
             try:
                 sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S")
                 if min_date <= sale_datetime <= max_date:
-                    sale_hour = sale_datetime.hour
-                    sales_per_hour[sale_hour]['total_quantity'] += float(sale["FSLL_QUANTITY_FSLL"])
-                    sales_per_hour[sale_hour]['total_tax_amount'] += float(sale["FSLL_TAX_INC_AMNT_FSLL"])
-            except (ValueError, KeyError):
-                continue  
-
+                    hour = sale_datetime.hour
+                    quantity = float(sale.get("FSLL_QUANTITY_FSLL"))
+                    tax_amount = float(sale.get("FSLL_TAX_INC_AMNT_FSLL"))
+                    sales_amount = quantity * tax_amount
+                    sales_per_hour[hour]['CA'] += sales_amount
+            except (ValueError, KeyError, TypeError):
+                continue
         sales_chart_data = [
-            {"SaleHour": hour, "CA": data["total_quantity"] * data["total_tax_amount"]}
+            {"SaleHour": hour, "CA": round(data["CA"], 2)}
             for hour, data in sorted(sales_per_hour.items())
         ]
 
@@ -707,24 +706,25 @@ class SalesPerHourMonthlyView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
         
-        sales_per_hour = defaultdict(lambda: {'total_quantity': 0, 'total_tax_amount': 0})
-
+        sales_per_hour = defaultdict(float)
         for sale in sales_data:
             try:
                 sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S")
                 if min_date <= sale_datetime <= max_date:
-                    sale_hour = sale_datetime.hour
-                    sales_per_hour[sale_hour]['total_quantity'] += float(sale["FSLL_QUANTITY_FSLL"])
-                    sales_per_hour[sale_hour]['total_tax_amount'] += float(sale["FSLL_TAX_INC_AMNT_FSLL"])
+                    hour = sale_datetime.hour
+                    quantity = float(sale.get("FSLL_QUANTITY_FSLL", 0) or 0)
+                    tax_amount = float(sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0)
+                    sales_amount = quantity * tax_amount
+                    sales_per_hour[hour] += sales_amount
             except (ValueError, KeyError, TypeError):
                 continue  
 
         sales_chart_data = [
-            {"SaleHour": hour, "CA": data["total_quantity"] * data["total_tax_amount"]}
-            for hour, data in sorted(sales_per_hour.items())
+            {"SaleHour": hour, "CA": round(amount, 2)}
+            for hour, amount in sorted(sales_per_hour.items())
         ]
 
-        return Response({'status': 'true', 'data': sales_chart_data})
+        return Response({'status': 'true', 'data': sales_chart_data}) 
     
 class SalesPerHourYearlyView(APIView):
     permission_classes = [IsAuthenticated]
@@ -756,23 +756,22 @@ class SalesPerHourYearlyView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
         
-        sales_per_hour = defaultdict(lambda: {'total_quantity': 0, 'total_tax_amount': 0})
-
+        sales_per_hour = defaultdict(float)
         for sale in sales_data:
             try:
                 sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S")
                 if min_date <= sale_datetime <= max_date:
-                    sale_hour = sale_datetime.hour
-                    sales_per_hour[sale_hour]['total_quantity'] += float(sale["FSLL_QUANTITY_FSLL"])
-                    sales_per_hour[sale_hour]['total_tax_amount'] += float(sale["FSLL_TAX_INC_AMNT_FSLL"])
+                    hour = sale_datetime.hour
+                    quantity = float(sale.get("FSLL_QUANTITY_FSLL", 0) or 0)
+                    tax_amount = float(sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0)
+                    sales_amount = quantity * tax_amount
+                    sales_per_hour[hour] += sales_amount
             except (ValueError, KeyError, TypeError):
                 continue  
-
         sales_chart_data = [
-            {"SaleHour": hour, "CA": data["total_quantity"] * data["total_tax_amount"]}
-            for hour, data in sorted(sales_per_hour.items())
+            {"SaleHour": hour, "CA": round(amount, 2)}
+            for hour, amount in sorted(sales_per_hour.items())
         ]
-
         return Response({'status': 'true', 'data': sales_chart_data})
     
 class SalesWeeklyComparisonGraphView(APIView):
@@ -783,11 +782,11 @@ class SalesWeeklyComparisonGraphView(APIView):
         if not (max_date_str and companyid):
             return Response({'status': 'false', 'message': 'All Fields Required'})
         try:
-            max_date = datetime.strptime(max_date_str, "%Y-%m-%d").date()
-            min_date_prev_week = max_date - timedelta(days=13)  
-            max_date_prev_week = max_date - timedelta(days=7)   
-            min_date_curr_week = max_date - timedelta(days=6)   
-            max_date_curr_week = max_date 
+            min_date_prev_week = datetime.strptime(max_date_str, "%Y-%m-%d") - timedelta(days=13)  
+            max_date_prev_week_date = datetime.strptime(max_date_str, "%Y-%m-%d") - timedelta(days=7) 
+            max_date_prev_week= max_date_prev_week_date + timedelta(days=1) - timedelta(seconds=1) 
+            min_date_curr_week = datetime.strptime(max_date_str, "%Y-%m-%d") - timedelta(days=6)   
+            max_date_curr_week = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1) 
 
         except ValueError:
             return Response({'status': 'false', 'message': 'Invalid date format'})
@@ -812,7 +811,7 @@ class SalesWeeklyComparisonGraphView(APIView):
 
         for sale in sales_data:
             try:
-                sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S").date()
+                sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S")
                 sale_day = sale_datetime.strftime("%A") 
                 sale_value = float(sale["FSLL_QUANTITY_FSLL"]) * float(sale["FSLL_TAX_INC_AMNT_FSLL"])
 
@@ -840,11 +839,13 @@ class SalesMonthlyComparisonGraphView(APIView):
         if not (max_date_str and companyid):
             return Response({'status': 'false', 'message': 'All Fields Required'})
         try:
-            max_date = datetime.strptime(max_date_str, "%Y-%m-%d").date()
+            max_date = datetime.strptime(max_date_str, "%Y-%m-%d")
             min_date_curr_month = max_date.replace(day=1)
-            max_date_curr_month = max_date
-            first_day_prev_month = (min_date_curr_month - timedelta(days=1)).replace(day=1)
-            last_day_prev_month = min_date_curr_month - timedelta(days=1)
+            max_date_curr_month=max_date + timedelta(days=1) - timedelta(seconds=1)
+            last_day_prev_month = min_date_curr_month - timedelta(seconds=1)
+            first_date_prev_month=last_day_prev_month.replace(day=1)
+            first_day_prev_month=first_date_prev_month - timedelta(days=1) + timedelta(seconds=1)
+
 
         except ValueError:
             return Response({'status': 'false', 'message': 'Invalid date '})
@@ -869,7 +870,7 @@ class SalesMonthlyComparisonGraphView(APIView):
 
         for sale in sales_data:
             try:
-                sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S").date()
+                sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S")
                 sale_day = sale_datetime.day 
 
                 sale_value = float(sale["FSLL_QUANTITY_FSLL"]) * float(sale["FSLL_TAX_INC_AMNT_FSLL"])
@@ -946,13 +947,20 @@ class SalesYearlyComparisonGraphView(APIView):
         ]
         return Response({'status': 'true', 'data': sales_comparison_data})
 
-class SalesGraphTotalSalesDataView(APIView):
+class SalesGraphEvolutionSalesDataView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, format=None):
         companyid = request.data.get('company_id')
+        filter_date = request.data.get('max_date')
         
-        if not companyid:
-            return Response({'status': 'false', 'message': 'Company ID is required'})
+        if not (companyid and filter_date):
+            return Response({'status': 'false', 'message': 'Company ID and Date are required'})
+
+        try:
+            filter_date_obj = datetime.strptime(filter_date, "%Y-%m-%d").date()
+            previous_date_obj = filter_date_obj - timedelta(days=1)
+        except ValueError:
+            return Response({'status': 'false', 'message': 'Invalid date format'})
 
         url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
         headers = {
@@ -960,7 +968,6 @@ class SalesGraphTotalSalesDataView(APIView):
         }
 
         response = requests.get(url, headers=headers)
-
         if response.status_code != 200:
             return Response({'status': 'false', 'message': 'Check Rest API'})
 
@@ -970,17 +977,38 @@ class SalesGraphTotalSalesDataView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
 
-        total_sales = 0
+        total_today = 0
+        total_yesterday = 0
 
         for sale in sales_data:
             try:
-                quantity = float(sale["FSLL_QUANTITY_FSLL"])
-                tax_amount = float(sale["FSLL_TAX_INC_AMNT_FSLL"])
-                total_sales += quantity * tax_amount
-            except (ValueError, KeyError, TypeError):
-                continue  
+                sale_date_str = sale["FSLH_TRANSACTION_DATE_FSLH"][:10]
+                sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d").date()
 
-        return Response({'status': 'true', 'total_sales': total_sales})
+                quantity = float(sale.get("FSLL_QUANTITY_FSLL", 0))
+                tax_amount = float(sale.get("FSLL_TAX_INC_AMNT_FSLL", 0))
+                total = quantity * tax_amount
+
+                if sale_date == filter_date_obj:
+                    total_today += total
+                elif sale_date == previous_date_obj:
+                    total_yesterday += total
+            except (ValueError, KeyError, TypeError):
+                continue
+
+        if total_yesterday == 0:
+            return Response({
+                'status': 'true',
+                'sales_evolution': None
+            })
+
+        evolution_percentage = ((total_today - total_yesterday) / total_yesterday) * 100
+
+        return Response({
+            'status': 'true',
+            'sales_evolution': round(evolution_percentage, 2)
+        })
+
 
 
 class SalesGraphTodayTotalSalesDataView(APIView):
@@ -1117,10 +1145,8 @@ class ProductGraphTodayAverageNumberProductperCustomerView(APIView):
             product_data = response_data.get('sales_data', [])
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
-
         total_today_product = 0
-        today_client_count = 0
-
+        unique_clients_today = set()
 
         for product in product_data:
             try:
@@ -1128,14 +1154,73 @@ class ProductGraphTodayAverageNumberProductperCustomerView(APIView):
                 client_id = product.get("FSLH_CLIENT_ID_DCLT")
                 quantity = float(product.get("FSLL_QUANTITY_FSLL", 0) or 0)
                 if sale_date == filter_date and client_id:
-                    today_client_count += 1
-                    total_today_product += quantity 
+                    unique_clients_today.add(client_id)
+                    total_today_product += quantity
             except (ValueError, KeyError, TypeError):
                 continue  
 
-        average_of_product_per_client = round(total_today_product / today_client_count, 2) if today_client_count > 0 else 0
+        client_count = len(unique_clients_today)
+        average_of_product_per_client = round(total_today_product / client_count, 2) if client_count > 0 else 0
 
         return Response({'status': 'true', 'averageofproductspercustomers': average_of_product_per_client})
+    
+class ProductGraphByBestSellerView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        filter_date = request.data.get('max_date')
+        companyid = request.data.get('company_id')
+
+        if not (filter_date and companyid):
+            return Response({'status': 'false', 'message': 'All Fields Required'})
+        try:
+            datetime.strptime(filter_date, "%Y-%m-%d")
+        except ValueError:
+            return Response({'status': 'false', 'message': 'Invalid date format'})
+
+        url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
+        headers = {
+            'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            return Response({'status': 'false', 'message': 'Check Rest API'})
+        try:
+            response_data = response.json()  
+            sales_data = response_data.get('sales_data', [])  
+        except (json.JSONDecodeError, AttributeError):
+            return Response({'status': 'false', 'message': 'Invalid data format received'})
+
+        product_sales = defaultdict(float)
+
+        for sale in sales_data:
+            try:
+                sale_date = sale.get("FSLH_TRANSACTION_DATE_FSLH")[:10]
+                product_label = sale.get("FSLL_PRODUCT_CODE_DFPR")
+                product_name=sale.get("DFPR_NAME_LBL_DFPR")
+                quantity = float(sale.get("FSLL_QUANTITY_FSLL") or 0)
+
+                if sale_date == filter_date and product_label:
+                    print(product_label)
+                    print(quantity)
+                    print(product_name)
+                    product_sales[product_label] += quantity
+            except (ValueError, TypeError):
+                continue
+
+        if not product_sales:
+            return Response({'status': 'false', 'message': 'No sales data found for the given date'})
+
+        top_product_label, top_quantity = max(product_sales.items(), key=lambda x: x[1])
+
+        return Response({
+            'status': 'true',
+            'data': {
+                'product_label': top_product_label,
+                'quantity_sold': int(top_quantity)
+            }
+        })
     
 class ProductGraphDataByTopProductsByQuantityView(APIView):
     permission_classes = [IsAuthenticated]
@@ -1165,31 +1250,46 @@ class ProductGraphDataByTopProductsByQuantityView(APIView):
             sales_data = response_data.get('sales_data', [])  
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
-
-        product_quantity_summary = defaultdict(float)
+        
+        product_summary = defaultdict(lambda: {"quantity": 0, "margin": 0.0})
 
         for sale in sales_data:
             sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
             product_code = sale.get("FSLL_PRODUCT_CODE_DFPR")
-            sale_quantity = sale.get("FSLL_QUANTITY_FSLL", 0) or 0 
+            quantity = float(sale.get("FSLL_QUANTITY_FSLL", 0) or 0)
+            margin = float(sale.get("DFPR_GROSS_MARGIN_DFPR", 0) or 0)  
 
             if sale_date_str and product_code:
                 try:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
                     if min_date <= sale_date <= max_date:
-                        print(f"Including qunatity for {product_code}: {sale_quantity}, Date: {sale_date}")
-                        product_quantity_summary[product_code] += sale_quantity 
+                        product_summary[product_code]["quantity"] += quantity
+                        product_summary[product_code]["margin"] += margin
                 except ValueError:
                     continue
-        topproduct_quantity_list = [
-            {"Product_code": product_code, "Quantity": int(sale_quantity)}
-            for product_code, sale_quantity in product_quantity_summary.items()
+
+        sorted_products = sorted(product_summary.items(), key=lambda x: x[1]["margin"], reverse=True)
+
+        product_list = [
+            {
+                "product_code": product_code,
+                "quantity": int(info["quantity"]),
+                "margin": round(info["margin"], 2)
+            }
+            for product_code, info in sorted_products
         ]
 
-        if not topproduct_quantity_list:
-            return Response({'status': 'true', 'message': 'No data available for the selected date range','data':[]})
+        if not product_list:
+            return Response({
+                'status': 'true',
+                'message': 'No data available for the selected date range',
+                'data': []
+            })
 
-        return Response({'status': 'true', 'data': topproduct_quantity_list})
+        return Response({
+            'status': 'true',
+            'data': product_list
+        })
     
 class ProductGraphDataBySalesandBeforeMarginView(APIView):
     permission_classes = [IsAuthenticated]
@@ -1227,14 +1327,14 @@ class ProductGraphDataBySalesandBeforeMarginView(APIView):
             product_code = sale.get("FSLL_PRODUCT_CODE_DFPR")
             sale_quantity = sale.get("FSLL_QUANTITY_FSLL", 0) or 0  
             tax_amount = sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0  
-            cost_price = sale.get("DFPR_COST_PRICE_DFPR", 0) or 0  
+            gross_price = sale.get("DFPR_GROSS_MARGIN_DFPR", 0) or 0  
 
             if sale_date_str and product_code:
                 try:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
                     if min_date <= sale_date <= max_date:
                         product_summary[product_code]['CA'] += sale_quantity * tax_amount  
-                        product_summary[product_code]['cost'] += sale_quantity * cost_price  
+                        product_summary[product_code]['cost'] += gross_price  
                 except ValueError:
                     continue
 
@@ -1242,7 +1342,7 @@ class ProductGraphDataBySalesandBeforeMarginView(APIView):
             {
                 "Product_code": product_code,
                 "CA": round(product_data['CA'], 2),
-                "Marge_HT": round(product_data['CA'] - product_data['cost'], 2)
+                "Marge_HT": round(product_data['cost'], 2)
             }
             for product_code, product_data in product_summary.items()
         ]
@@ -1282,102 +1382,74 @@ class ProductGraphDataByTodayGrossMarginView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
 
-        total_CA = 0
-        total_cost = 0
+        gross_margin_today = 0
 
         for sale in product_data:
-            sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
-            sale_quantity = sale.get("FSLL_QUANTITY_FSLL", 0) or 0  
-            tax_amount = sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0  
-            cost_price = sale.get("DFPR_COST_PRICE_DFPR", 0) or 0  
+            sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")   
+            gross_margin = float(sale.get("DFPR_GROSS_MARGIN_DFPR", 0) or 0)
 
             if sale_date_str:
                 try:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S").date()
                     if sale_date == filter_date_obj: 
-                        total_CA += sale_quantity * tax_amount  
-                        print(total_CA)
-                        total_cost += sale_quantity * cost_price  
-                        print(total_cost)
+                        gross_margin_today += gross_margin
                 except ValueError:
                     continue
-
-        gross_margin = total_CA - total_cost
-        return Response({'status': 'true', 'gross_margindata': round(gross_margin, 2)})
+        return Response({'status': 'true', 'gross_margindata': round(gross_margin_today, 2)})
 
 
-class ProductGraphByFoodCostAndDrinkCostView(APIView):
-    permission_classes=[IsAuthenticated]
-    def post(self,request,fomat=None):
+class ProductGraphByProductCategoryView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
         min_date_str = request.data.get('min_date')
         max_date_str = request.data.get('max_date')
         companyid = request.data.get('company_id')
-
         if not (min_date_str and max_date_str and companyid):
             return Response({'status': 'false', 'message': 'All Fields Required'})
-
         try:
             min_date = datetime.strptime(min_date_str, "%Y-%m-%d")
-            max_date = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
+            max_date = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)  
         except ValueError:
             return Response({'status': 'false', 'message': 'Invalid date format. Use YYYY-MM-DD'})
 
         url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
-        headers = {'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'}
+        headers = {
+            'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'
+        }
 
         response = requests.get(url, headers=headers)
+
         if response.status_code != 200:
             return Response({'status': 'false', 'message': 'Check Rest API'})
-
         try:
-            response_data = response.json()
-            sales_data = response_data.get('sales_data', [])
-            materialdata = response_data.get('material_data', [])
-        except (requests.exceptions.JSONDecodeError, AttributeError):
+            response_data = response.json()  
+            product_data = response_data.get('sales_data', [])  
+        except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
 
-        total_food_cost = 0
-        total_drink_cost = 0
+        category_product_summary = defaultdict(float)
 
-        for sale in sales_data:
-            sale_date_str = sale.get('FSLH_TRANSACTION_DATE_FSLH')
-            if not sale_date_str:
-                continue
+        for product in product_data:
+            product_date_str = product.get("FSLH_TRANSACTION_DATE_FSLH")
+            category = product.get("DFPR_MAIN_CATEGORY_LBL_DFPR")
+            sale_quantity = float(product.get("FSLL_QUANTITY_FSLL", 0) or 0)  
 
-            try:
-                sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
-            except ValueError:
-                continue  
+            if product_date_str:
+                try:
+                    sale_date = datetime.strptime(product_date_str, "%Y-%m-%d %H:%M:%S")
+                    if min_date <= sale_date <= max_date:
+                        category_product_summary[category] += sale_quantity 
+                except ValueError:
+                    continue
+        
+        product_list = [
+            {"category": category, "Quantity": round(total_CA, 2)}
+            for category, total_CA in category_product_summary.items()
+        ]
+        if not product_list:
+            return Response({'status': 'true', 'message': 'No data available for the selected date range','data':[]})
 
-            if min_date <= sale_date <= max_date:  
-                quantity = sale.get('FSLL_QUANTITY_FSLL', 0)
-                sale_product_code = sale.get('FSLL_PRODUCT_CODE_DFPR')
-                category = sale.get('DFPR_MAIN_CATEGORY_LBL_DFPR')
-                print('sale',sale_product_code)
-
-                for material in materialdata:
-                    material_product_code = material.get('DPRM_PRODUCT_CODE_DFPR')
-                    quantity_used = material.get('DPRM_QUANTITY_USED_DPRM', 0)
-                    unit_price = material.get('DRMT_UNIT_PRICE_DRMT', 0)
-                    print('material',material_product_code)
-
-                    if sale_product_code == material_product_code:
-                        print('materialcomparison',material_product_code)
-                        cost = quantity * (quantity_used * unit_price)
-                        if category == "AL":  
-                            total_food_cost += cost
-                        elif category == "BO":  
-                            total_drink_cost += cost
-
-        category=[{'Food_Cost': round(total_food_cost, 2),
-            'Drink_Cost': round(total_drink_cost, 2)}]
-
-# BO means drink cost and AL means food cost
-        return Response({
-            'status': 'true',
-            'data':category
-            
-        })
+        return Response({'status': 'true', 'data': product_list})
 
 
 class CustomerGraphByAverageCAPerCustomerView(APIView):
@@ -1409,26 +1481,25 @@ class CustomerGraphByAverageCAPerCustomerView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
 
-        total_CA = 0
-        total_client_transactions = 0 
+        total_basket_amount = 0
+        unique_clients = set()
 
         for sale in product_data:
             try:
-                sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")  
-                client_id = sale.get("FSLH_CLIENT_ID_DCLT")  
-                sale_quantity = float(sale.get("FSLL_QUANTITY_FSLL", 0) or 0)  
-                tax_amount = float(sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0)  
+                sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
+                client_id = sale.get("FSLH_CLIENT_ID_DCLT")
+                quantity = float(sale.get("FSLL_QUANTITY_FSLL", 0) or 0)
+                tax_amount = float(sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0)
 
                 if sale_date_str and client_id:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S").date()
-
                     if sale_date == filter_date_obj:
-                        total_client_transactions += 1 
-                        total_CA += sale_quantity * tax_amount  
+                        unique_clients.add(client_id)
+                        total_basket_amount += quantity * tax_amount
             except (ValueError, KeyError, TypeError):
-                continue  
+                continue
 
-        average_amount_by_client = round(total_CA / total_client_transactions, 2) if total_client_transactions > 0 else 0
+        average_amount_by_client = round(total_basket_amount / len(unique_clients), 2) if unique_clients else 0
 
         return Response({'status': 'true', 'averageamountbyclient_data': average_amount_by_client})
     
@@ -1462,21 +1533,78 @@ class CustomerGraphByNumberOfCustomerTodayView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
 
-        total_client_transactions = 0 
-
+        unique_clients = set() 
         for sale in product_data:
             try:
-                sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")  
-                client_id = sale.get("FSLH_CLIENT_ID_DCLT") 
+                sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
+                client_id = sale.get("FSLH_CLIENT_ID_DCLT")
+                
                 if sale_date_str and client_id:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S").date()
 
                     if sale_date == filter_date_obj:
-                        total_client_transactions += 1 
+                        unique_clients.add(client_id)
             except (ValueError, KeyError, TypeError):
-                continue  
+                continue
+        print(unique_clients)
+        return Response({'status': 'true', 'today_numberofcustomer': len(unique_clients)})
+    
+class CustomerGraphByCustomerEvolutionTodayView(APIView):
+    permission_classes=[IsAuthenticated]
+    def post(self,request,format=None):
+        companyid = request.data.get('company_id')
+        filter_date = request.data.get('max_date')
 
-        return Response({'status': 'true', 'today_numberofcustomer': total_client_transactions})
+        if not (companyid and filter_date):
+            return Response({'status': 'false', 'message': 'Company ID and Date are required'})
+        try:
+            filter_date_obj = datetime.strptime(filter_date, "%Y-%m-%d").date()
+            previous_date_obj = filter_date_obj - timedelta(days=1)
+        except ValueError:
+            return Response({'status': 'false', 'message': 'Invalid date format'})
+
+        url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
+        headers = {
+            'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'
+        }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            return Response({'status': 'false', 'message': 'Check Rest API'})
+
+        try:
+            response_data = response.json()
+            product_data = response_data.get('sales_data', [])
+        except (json.JSONDecodeError, AttributeError):
+            return Response({'status': 'false', 'message': 'Invalid data format received'})
+
+        today_clients = set()
+        yesterday_clients = set()
+
+        for sale in product_data:
+            try:
+                sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
+                client_id = sale.get("FSLH_CLIENT_ID_DCLT")
+                
+                if sale_date_str and client_id:
+                    sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S").date()
+
+                    if sale_date == filter_date_obj:
+                        today_clients.add(client_id)
+                    elif sale_date == previous_date_obj:
+                        yesterday_clients.add(client_id)
+            except (ValueError, KeyError, TypeError):
+                continue
+
+        today_count = len(today_clients)
+        yesterday_count = len(yesterday_clients)
+
+        if yesterday_count == 0:
+            customerevolution = 0
+        else:
+            customerevolution = round(((today_count - yesterday_count) / yesterday_count) * 100, 2)
+        return Response({'status': 'true', 'today_customer_evoltion': customerevolution})
     
 class CustomerGraphNumberOfCustomerPerHourWeeklyView(APIView):
     permission_classes = [IsAuthenticated]
@@ -1509,20 +1637,21 @@ class CustomerGraphNumberOfCustomerPerHourWeeklyView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
         
-        transactions_per_hour = defaultdict(int)
+        transactions_per_hour = defaultdict(set)
 
         for sale in sales_data:
             try:
                 sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S")
+                client_id = sale.get("FSLH_CLIENT_ID_DCLT")
 
-                if min_date <= sale_datetime <= max_date:
-                    sale_hour = sale_datetime.hour
-                    transactions_per_hour[sale_hour] += 1  
-            except (ValueError, KeyError):
-                continue  
+                if min_date <= sale_datetime <= max_date and client_id:
+                    hour = sale_datetime.hour
+                    transactions_per_hour[hour].add(client_id)
+            except (ValueError, KeyError, TypeError):
+                continue 
         sales_chart_data = [
-            {"Hour": hour, "NumberOfClient": count}
-            for hour, count in sorted(transactions_per_hour.items())
+            {"Hour": hour, "NumberOfCustomers": len(clients)}
+            for hour, clients in sorted(transactions_per_hour.items())
         ]
 
         return Response({'status': 'true', 'customer_perhour_data': sales_chart_data})
@@ -1559,20 +1688,21 @@ class CustomerGraphNumberOfCustomerPerHourMonthlyView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
         
-        transactions_per_hour = defaultdict(int)
+        transactions_per_hour = defaultdict(set)
 
         for sale in sales_data:
             try:
                 sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S")
+                client_id = sale.get("FSLH_CLIENT_ID_DCLT")
 
-                if min_date <= sale_datetime <= max_date:
-                    sale_hour = sale_datetime.hour
-                    transactions_per_hour[sale_hour] += 1  
-            except (ValueError, KeyError):
-                continue  
+                if min_date <= sale_datetime <= max_date and client_id:
+                    hour = sale_datetime.hour
+                    transactions_per_hour[hour].add(client_id)
+            except (ValueError, KeyError, TypeError):
+                continue
         sales_chart_data = [
-            {"Hour": hour, "NumberOfClient": count}
-            for hour, count in sorted(transactions_per_hour.items())
+            {"Hour": hour, "NumberOfCustomers": len(clients)}
+            for hour, clients in sorted(transactions_per_hour.items())
         ]
 
         return Response({'status': 'true', 'customer_perhour_data': sales_chart_data})
@@ -1609,20 +1739,21 @@ class CustomerGraphNumberOfCustomerPerHourYearlyView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
         
-        transactions_per_hour = defaultdict(int)
+        transactions_per_hour = defaultdict(set)
 
         for sale in sales_data:
             try:
                 sale_datetime = datetime.strptime(sale["FSLH_TRANSACTION_DATE_FSLH"], "%Y-%m-%d %H:%M:%S")
+                client_id = sale.get("FSLH_CLIENT_ID_DCLT")
 
-                if min_date <= sale_datetime <= max_date:
-                    sale_hour = sale_datetime.hour
-                    transactions_per_hour[sale_hour] += 1  
-            except (ValueError, KeyError):
-                continue  
+                if min_date <= sale_datetime <= max_date and client_id:
+                    hour = sale_datetime.hour
+                    transactions_per_hour[hour].add(client_id)
+            except (ValueError, KeyError, TypeError):
+                continue 
         sales_chart_data = [
-            {"Hour": hour, "NumberOfClient": count}
-            for hour, count in sorted(transactions_per_hour.items())
+            {"Hour": hour, "NumberOfCustomers": len(clients)}
+            for hour, clients in sorted(transactions_per_hour.items())
         ]
 
         return Response({'status': 'true', 'customer_perhour_data': sales_chart_data})
@@ -1656,24 +1787,30 @@ class CustomerGraphBySalesChannelView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
 
-        channel_sales_summary = defaultdict(int)
+        channel_sales_summary = defaultdict(set)
 
         for sale in sales_data:
             sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
             channel_code = sale.get("FSLL_CANAL_DE_VENTE_TYPE_LBL_FSLL")
+            customer_id = sale.get("FSLH_CLIENT_ID_DCLT")
 
-            if sale_date_str and channel_code:
+            if sale_date_str and channel_code and customer_id:
                 try:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
                     if min_date <= sale_date <= max_date:
-                        channel_sales_summary[channel_code] += 1
+                        channel_sales_summary[channel_code].add(customer_id)
                 except ValueError:
                     continue
 
         sales_list = [
-            {"Channel_name": channel_code, "total_number_of_clint": transaction_count}
-            for channel_code, transaction_count in channel_sales_summary.items()
+            {
+                "Channel_name": channel,
+                "total_number_of_clients": len(customers)
+            }
+            for channel, customers in channel_sales_summary.items()
         ]
+
+        sales_list.sort(key=lambda x: x['total_number_of_clients'], reverse=True)
 
         if not sales_list:
             return Response({'status': 'true', 'message': 'No data available for the selected date range', 'data': []})
@@ -1691,11 +1828,11 @@ class CustomerGraphForNumberOfCustomerPerWeekView(APIView):
             return Response({'status': 'false', 'message': 'All Fields Required'})
 
         try:
-            max_date = datetime.strptime(max_date_str, "%Y-%m-%d").date()  
-            min_date_prev_week = max_date - timedelta(days=13)  
-            max_date_prev_week = max_date - timedelta(days=7)   
-            min_date_curr_week = max_date - timedelta(days=6)   
-            max_date_curr_week = max_date  
+            min_date_prev_week = datetime.strptime(max_date_str, "%Y-%m-%d") - timedelta(days=13) 
+            max_date_prev_week_date = datetime.strptime(max_date_str, "%Y-%m-%d") - timedelta(days=7) 
+            max_date_prev_week= max_date_prev_week_date + timedelta(days=1) - timedelta(seconds=1) 
+            min_date_curr_week = datetime.strptime(max_date_str, "%Y-%m-%d") - timedelta(days=6)  
+            max_date_curr_week = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1) 
         except ValueError:
             return Response({'status': 'false', 'message': 'Invalid date format'})
 
@@ -1720,7 +1857,7 @@ class CustomerGraphForNumberOfCustomerPerWeekView(APIView):
             transaction_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
 
             try:
-                transaction_date = datetime.strptime(transaction_date_str, "%Y-%m-%d %H:%M:%S").date()
+                transaction_date = datetime.strptime(transaction_date_str, "%Y-%m-%d %H:%M:%S")
                 weekday_name = transaction_date.strftime("%A")  
             except ValueError:
                 continue  
@@ -1747,11 +1884,13 @@ class CustomerGraphForNumberOfCustomerPerMonthView(APIView):
             return Response({'status': 'false', 'message': 'All Fields Required'})
 
         try:
-            max_date = datetime.strptime(max_date_str, "%Y-%m-%d").date()
-            min_date_curr_month = max_date.replace(day=1)  
-            max_date_curr_month = max_date  
-            first_day_prev_month = (min_date_curr_month - timedelta(days=1)).replace(day=1)  
-            last_day_prev_month = min_date_curr_month - timedelta(days=1)
+            max_date = datetime.strptime(max_date_str, "%Y-%m-%d")
+            min_date_curr_month = max_date.replace(day=1)
+            max_date_curr_month=max_date + timedelta(days=1) - timedelta(seconds=1)
+            last_day_prev_month = min_date_curr_month - timedelta(seconds=1)
+            first_date_prev_month=last_day_prev_month.replace(day=1)
+            first_day_prev_month=first_date_prev_month - timedelta(days=1) + timedelta(seconds=1)
+            
         except ValueError:
             return Response({'status': 'false', 'message': 'Invalid date format'})
 
@@ -1777,7 +1916,7 @@ class CustomerGraphForNumberOfCustomerPerMonthView(APIView):
             transaction_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
 
             try:
-                transaction_date = datetime.strptime(transaction_date_str, "%Y-%m-%d %H:%M:%S").date()
+                transaction_date = datetime.strptime(transaction_date_str, "%Y-%m-%d %H:%M:%S")
                 transactiondate=transaction_date.day
             except ValueError:
                 continue  
@@ -1806,9 +1945,13 @@ class CustomerGraphForNumberOfCustomerPerYearView(APIView):
         try:
             max_date = datetime.strptime(max_date_str, "%Y-%m-%d")
             min_date_curr_year = datetime(max_date.year, 1, 1)
-            max_date_curr_year = max_date
+            print(min_date_curr_year)
+            max_date_curr_year = datetime(max_date.year, max_date.month, max_date.day, 23, 59, 59)
+            print(max_date_curr_year)
             min_date_prev_year = datetime(max_date.year - 1, 1, 1)
-            max_date_prev_year = datetime(max_date.year - 1, 12, 31)
+            print(min_date_prev_year)
+            max_date_prev_year = datetime(max_date.year - 1, 12, 31, 23, 59, 59)
+            print(max_date_prev_year)
         except ValueError:
             return Response({'status': 'false', 'message': 'Invalid date format. Use YYYY-MM-DD'})
 
