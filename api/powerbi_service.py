@@ -5,9 +5,9 @@ import os
 from django.conf import settings
 
 def generate_sas_url_from_api(logo_url, expiry_hours=6):
-    AZURE_STORAGE_ACCOUNT_NAME = "csenyone"
+    AZURE_STORAGE_ACCOUNT_NAME = "stgenyonesea"
     AZURE_STORAGE_ACCOUNT_KEY = settings.AZURE_STORAGE_KEY
-    AZURE_STORAGE_CONTAINER_NAME = "sfenyone"
+    AZURE_STORAGE_CONTAINER_NAME = "raw-data"
 
     parsed_url = urlparse(logo_url)
     path_parts = parsed_url.path.lstrip("/").split("/", 1)
