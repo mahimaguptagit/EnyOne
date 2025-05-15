@@ -1199,13 +1199,11 @@ class ProductGraphByBestSellerView(APIView):
                 sale_date = sale.get("FSLH_TRANSACTION_DATE_FSLH")[:10]
                 product_label = sale.get("FSLL_PRODUCT_CODE_DFPR")
                 product_name=sale.get("DFPR_NAME_LBL_DFPR")
-                quantity = float(sale.get("FSLL_QUANTITY_FSLL") or 0)
+                sale_quantity = sale.get("FSLL_QUANTITY_FSLL", 0) or 0  
+                tax_amount = sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0 
 
                 if sale_date == filter_date and product_label:
-                    print(product_label)
-                    print(quantity)
-                    print(product_name)
-                    product_sales[product_label] += quantity
+                    product_sales[product_label] += sale_quantity * tax_amount
             except (ValueError, TypeError):
                 continue
 
@@ -1218,18 +1216,20 @@ class ProductGraphByBestSellerView(APIView):
             'status': 'true',
             'data': {
                 'product_label': top_product_label,
-                'quantity_sold': int(top_quantity)
+                'product_sales': top_quantity
             }
         })
     
-class ProductGraphDataByTopProductsByQuantityView(APIView):
+class ProductGraphDataBySalesAndGrossMarginView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, format=None):
         min_date_str = request.data.get('min_date')
         max_date_str = request.data.get('max_date')
         companyid = request.data.get('company_id')
+
         if not (min_date_str and max_date_str and companyid):
             return Response({'status': 'false', 'message': 'All Fields Required'})
+
         try:
             min_date = datetime.strptime(min_date_str, "%Y-%m-%d")
             max_date = datetime.strptime(max_date_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)  
@@ -1237,61 +1237,51 @@ class ProductGraphDataByTopProductsByQuantityView(APIView):
             return Response({'status': 'false', 'message': 'Invalid date format. Use YYYY-MM-DD'})
 
         url = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/sales-data/?company_id={companyid}"
-        headers = {
-            'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'
-        }
+        headers = {'Authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP'}
 
         response = requests.get(url, headers=headers)
-
         if response.status_code != 200:
             return Response({'status': 'false', 'message': 'Check Rest API'})
+
         try:
             response_data = response.json()  
             sales_data = response_data.get('sales_data', [])  
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
-        
-        product_summary = defaultdict(lambda: {"quantity": 0, "margin": 0.0})
+
+        product_summary = defaultdict(lambda: {'CA': 0, 'gross_margin': 0})
 
         for sale in sales_data:
             sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
             product_code = sale.get("FSLL_PRODUCT_CODE_DFPR")
-            quantity = float(sale.get("FSLL_QUANTITY_FSLL", 0) or 0)
-            margin = float(sale.get("DFPR_GROSS_MARGIN_DFPR", 0) or 0)  
+            sale_quantity = sale.get("FSLL_QUANTITY_FSLL", 0) or 0  
+            tax_amount = sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0  
+            gross_price = sale.get("DFPR_GROSS_MARGIN_DFPR", 0) or 0 
 
             if sale_date_str and product_code:
                 try:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
                     if min_date <= sale_date <= max_date:
-                        product_summary[product_code]["quantity"] += quantity
-                        product_summary[product_code]["margin"] += margin
+                        product_summary[product_code]['CA'] += sale_quantity * tax_amount  
+                        product_summary[product_code]['gross_margin'] += gross_price 
                 except ValueError:
                     continue
 
-        sorted_products = sorted(product_summary.items(), key=lambda x: x[1]["margin"], reverse=True)
-
-        product_list = [
+        topproduct_grossmargin_list = [
             {
-                "product_code": product_code,
-                "quantity": int(info["quantity"]),
-                "margin": round(info["margin"], 2)
+                "Product_code": product_code,
+                "CA": round(product_data['CA'], 2),
+                "Gross_Margin": round(product_data['gross_margin'], 2)
             }
-            for product_code, info in sorted_products
+            for product_code, product_data in product_summary.items()
         ]
 
-        if not product_list:
-            return Response({
-                'status': 'true',
-                'message': 'No data available for the selected date range',
-                'data': []
-            })
+        if not topproduct_grossmargin_list:
+            return Response({'status': 'true', 'message': 'No data available for the selected date range', 'data': []})
 
-        return Response({
-            'status': 'true',
-            'data': product_list
-        })
+        return Response({'status': 'true', 'data': topproduct_grossmargin_list})
     
-class ProductGraphDataBySalesandBeforeMarginView(APIView):
+class ProductGraphDataBySalesandCostPriceView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, format=None):
         min_date_str = request.data.get('min_date')
@@ -1326,31 +1316,31 @@ class ProductGraphDataBySalesandBeforeMarginView(APIView):
             sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
             product_code = sale.get("FSLL_PRODUCT_CODE_DFPR")
             sale_quantity = sale.get("FSLL_QUANTITY_FSLL", 0) or 0  
-            tax_amount = sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0  
-            gross_price = sale.get("DFPR_GROSS_MARGIN_DFPR", 0) or 0  
+            tax_amount = sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0 
+            cost_price = sale.get("DFPR_COST_PRICE_DFPR",0) or 0
 
             if sale_date_str and product_code:
                 try:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
                     if min_date <= sale_date <= max_date:
-                        product_summary[product_code]['CA'] += sale_quantity * tax_amount  
-                        product_summary[product_code]['cost'] += gross_price  
+                        product_summary[product_code]['CA'] += sale_quantity * tax_amount 
+                        product_summary[product_code]['cost'] += cost_price
                 except ValueError:
                     continue
 
-        topproduct_margin_list = [
+        topproduct_costprice_list = [
             {
                 "Product_code": product_code,
                 "CA": round(product_data['CA'], 2),
-                "Marge_HT": round(product_data['cost'], 2)
+                "Cost_price" :round(product_data['cost'],2)
             }
             for product_code, product_data in product_summary.items()
         ]
 
-        if not topproduct_margin_list:
+        if not topproduct_costprice_list:
             return Response({'status': 'true', 'message': 'No data available for the selected date range', 'data': []})
 
-        return Response({'status': 'true', 'data': topproduct_margin_list})
+        return Response({'status': 'true', 'data': topproduct_costprice_list})
     
 
 class ProductGraphDataByTodayGrossMarginView(APIView):
