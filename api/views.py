@@ -1203,7 +1203,7 @@ class ProductGraphByBestSellerView(APIView):
                 tax_amount = sale.get("FSLL_TAX_INC_AMNT_FSLL", 0) or 0 
 
                 if sale_date == filter_date and product_label:
-                    product_sales[product_label] += sale_quantity * tax_amount
+                    product_sales[product_label] += sale_quantity 
             except (ValueError, TypeError):
                 continue
 
@@ -1216,11 +1216,11 @@ class ProductGraphByBestSellerView(APIView):
             'status': 'true',
             'data': {
                 'product_label': top_product_label,
-                'product_sales': top_quantity
+                'product_salesqty': top_quantity
             }
         })
     
-class ProductGraphDataBySalesAndGrossMarginView(APIView):
+class ProductGraphDataBySalesQtyAndGrossMarginView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, format=None):
         min_date_str = request.data.get('min_date')
@@ -1249,7 +1249,7 @@ class ProductGraphDataBySalesAndGrossMarginView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
 
-        product_summary = defaultdict(lambda: {'CA': 0, 'gross_margin': 0})
+        product_summary = defaultdict(lambda: {'Quantity': 0, 'gross_margin': 0})
 
         for sale in sales_data:
             sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
@@ -1262,7 +1262,7 @@ class ProductGraphDataBySalesAndGrossMarginView(APIView):
                 try:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
                     if min_date <= sale_date <= max_date:
-                        product_summary[product_code]['CA'] += sale_quantity * tax_amount  
+                        product_summary[product_code]['Quantity'] += sale_quantity   
                         product_summary[product_code]['gross_margin'] += gross_price 
                 except ValueError:
                     continue
@@ -1270,7 +1270,7 @@ class ProductGraphDataBySalesAndGrossMarginView(APIView):
         topproduct_grossmargin_list = [
             {
                 "Product_code": product_code,
-                "CA": round(product_data['CA'], 2),
+                "Qty": product_data['Quantity'],
                 "Gross_Margin": round(product_data['gross_margin'], 2)
             }
             for product_code, product_data in product_summary.items()
@@ -1281,7 +1281,7 @@ class ProductGraphDataBySalesAndGrossMarginView(APIView):
 
         return Response({'status': 'true', 'data': topproduct_grossmargin_list})
     
-class ProductGraphDataBySalesandCostPriceView(APIView):
+class ProductGraphDataBySalesQtyandCostPriceView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request, format=None):
         min_date_str = request.data.get('min_date')
@@ -1310,7 +1310,7 @@ class ProductGraphDataBySalesandCostPriceView(APIView):
         except (json.JSONDecodeError, AttributeError):
             return Response({'status': 'false', 'message': 'Invalid data format received'})
 
-        product_summary = defaultdict(lambda: {'CA': 0, 'cost': 0})
+        product_summary = defaultdict(lambda: {'Quantity': 0, 'cost': 0})
 
         for sale in sales_data:
             sale_date_str = sale.get("FSLH_TRANSACTION_DATE_FSLH")
@@ -1323,7 +1323,7 @@ class ProductGraphDataBySalesandCostPriceView(APIView):
                 try:
                     sale_date = datetime.strptime(sale_date_str, "%Y-%m-%d %H:%M:%S")
                     if min_date <= sale_date <= max_date:
-                        product_summary[product_code]['CA'] += sale_quantity * tax_amount 
+                        product_summary[product_code]['Quantity'] += sale_quantity
                         product_summary[product_code]['cost'] += cost_price
                 except ValueError:
                     continue
@@ -1331,7 +1331,7 @@ class ProductGraphDataBySalesandCostPriceView(APIView):
         topproduct_costprice_list = [
             {
                 "Product_code": product_code,
-                "CA": round(product_data['CA'], 2),
+                "Qty": product_data['Quantity'],
                 "Cost_price" :round(product_data['cost'],2)
             }
             for product_code, product_data in product_summary.items()

@@ -40,8 +40,8 @@ urlpatterns = [
     path('productgraph-today-productsold/',views.ProductGraphTodayProductSoldView.as_view(),name='ProductGraphTodayProductSold'),
     path('productgraph-average-productspercustomers/',views.ProductGraphTodayAverageNumberProductperCustomerView.as_view(),name='ProductGraphTodayAverageNumberProductperCustomer'),
     path('productgraph-today-bestseller/',views.ProductGraphByBestSellerView.as_view(),name='ProductGraphByBestSeller'),
-    path('productgraph-topproduct-salesandgrossmargin/',views.ProductGraphDataBySalesAndGrossMarginView.as_view(),name='ProductGraphDataBySalesAndGrossMargin'),
-    path('productgraph-salesandcostprice/',views.ProductGraphDataBySalesandCostPriceView.as_view(),name='ProductGraphDataBySalesandCostPrice'),
+    path('productgraph-topproduct-salesandgrossmargin/',views.ProductGraphDataBySalesQtyAndGrossMarginView.as_view(),name='ProductGraphDataBySalesAndGrossMargin'),
+    path('productgraph-salesandcostprice/',views.ProductGraphDataBySalesQtyandCostPriceView.as_view(),name='ProductGraphDataBySalesandCostPrice'),
     path('productgraph-grossmargindata/',views.ProductGraphDataByTodayGrossMarginView.as_view(),name='ProductGraphDataByTodayGrossMargin'),
     path('productgraph-productbycategory/',views.ProductGraphByProductCategoryView.as_view(),name='ProductGraphByProductCategory'),
 
