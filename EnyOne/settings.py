@@ -121,6 +121,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'EXCEPTION_HANDLER': 'dashboard.utils.custom_exception_handler',
     'DATETIME_FORMAT': "%d-%m-%Y, %H:%M:%S",
 }
 

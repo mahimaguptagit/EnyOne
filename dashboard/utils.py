@@ -4,6 +4,9 @@ from django.conf import settings
 from .models import *
 import firebase_admin
 from firebase_admin import credentials, messaging, exceptions
+from rest_framework.views import exception_handler
+from rest_framework.response import Response
+from rest_framework import status
 
 cred = credentials.Certificate(settings.FCM_PATH)
 firebase_admin.initialize_app(cred)
@@ -72,10 +75,13 @@ def send_resolved_ticket(email,refernce_number,userdata):
             print("Error: No FCM token found for the user.")
 
 
+def custom_exception_handler(exc, context):
+    response = exception_handler(exc, context)
 
-
-
-
-  
-    
+    if response is not None and response.data.get('code') == 'token_not_valid':
+        return Response({
+            'status': 'false',
+            'message': 'Invalid token'
+        })
+    return response  
    
