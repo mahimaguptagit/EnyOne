@@ -43,7 +43,7 @@ class UserLoginView(APIView):
         if response1.status_code == 200:
             response_data = response1.json()
             print(response_data)
-            if response_data.get('message') == 'Test succesfully!':
+            if response_data.get('message') == 'Authentication successful!':
                 
                 url1 = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/validate-email/?email={username}"
                 
@@ -1536,7 +1536,6 @@ class CustomerGraphByNumberOfCustomerTodayView(APIView):
                         unique_clients.add(client_id)
             except (ValueError, KeyError, TypeError):
                 continue
-        print(unique_clients)
         return Response({'status': 'true', 'today_numberofcustomer': len(unique_clients)})
     
 class CustomerGraphByCustomerEvolutionTodayView(APIView):
