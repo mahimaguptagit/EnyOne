@@ -25,66 +25,26 @@ class UserLoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
         phone_verify = request.data.get('device_id')
-
         if not username or not password or not phone_verify:
             return Response({'status': 'false', 'message': 'Both username and password are required.'})
         
         userdata = User.objects.filter(is_admin=False, email=username).first()
         if not userdata:
-            return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
-
-        url = 'https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/test/'
-        headers = {
-            'authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP',
-            'Content-Type': 'application/json'
-        }
-        print("Headers being sent:", headers)
-        response1 = requests.get(url, headers=headers)
-        if response1.status_code == 200:
-            response_data = response1.json()
-            print(response_data)
-            if response_data.get('message') == 'Authentication successful!':
-                
-                url1 = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/validate-email/?email={username}"
-                
-                response2 = requests.get(url1, headers=headers)
-                
-                if response2.status_code == 200:
-                    response_data2 = response2.json()
-                    
-                    if response_data2.get('is_exist'):
-                            userdata = User.objects.filter(is_superuser=False, email=username).first()
-                            userdata.phone_verify=phone_verify
-                            userdata.save()
-                            logo_url = response_data2.get("logo")  
-
-                            if logo_url:
-                                    sas_url = generate_sas_url_from_api(logo_url)
-                            
-                            if userdata.password == password:
-                                login(request, userdata)
-                                token = get_tokens_for_user(userdata)  
-                                return Response({
-                                    'status': 'true',
-                                    'access_token': token,
-                                    'message': 'LogIn Successfully',
-                                    'data': response_data2,
-                                    'working_logo_url':sas_url,
-                                    'show_logo':userdata.logoappearance
-                                })
-                            else:
-                                return Response({'status': 'false', 'message': 'Please Check User Details !!'})
-                    
-                    else:
-                        return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
-                
-                else:
-                    return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
-
-            else:
-                return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
-
-        return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
+            return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})                
+        if userdata.password == password:
+            login(request, userdata)
+            token = get_tokens_for_user(userdata) 
+            userdata.phone_verify=phone_verify
+            userdata.save() 
+            return Response({
+                'status': 'true',
+                'access_token': token,
+                'message': 'LogIn Successfully',
+                'company_id':userdata.company_id,
+                "username":userdata.username,
+                })
+        else:
+            return Response({'status': 'false', 'message': 'Please Check Password !!'})
     
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -95,37 +55,15 @@ class UserProfileView(APIView):
             return Response({'status':'false','message':'User data not found !!'})
         userdata.phone_verify=phone_verify
         userdata.save()
-        url1 = f"https://enyone-api2-f5gze2bpdfdwg8eh.southeastasia-01.azurewebsites.net/validate-email/?email={userdata.email}"
-
-        headers = {
-            'authorization': 'Bearer Mye8MLyEHkcgbba2zfe94HTFwUQjr8Z5tr0FpE41Sb73OYWK3BYMqvxBdVkBzqpP',
-            'Content-Type': 'application/json'
-        }
-                
-        response2 = requests.get(url1, headers=headers)
-                
-        if response2.status_code == 200:
-            response_data2 = response2.json()
-                    
-            if response_data2.get('is_exist'):
-                            logo_url = response_data2.get("logo") 
-                            if logo_url:
-                                    sas_url = generate_sas_url_from_api(logo_url)
-                                    userdetail={
-                                            "username":userdata.username,
-                                            "first_name":userdata.first_name,
-                                            "last_name":userdata.last_name,
-                                            "email":userdata.email,
-                                            "image":userdata.image.url if userdata.image else None,
-                                            "phone_number":userdata.phone_number,
-                                            "show_logo":userdata.logoappearance,
-                                            "working_logo_url": sas_url
-                                            }
-                                    return Response({'status':'true','message':'User Profile Data','user_data':userdetail})
-            else:
-                return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})
-        else:
-            return Response({'status': 'false', 'message': 'Check RestAPI'})
+        userdetail={
+            "username":userdata.username,
+            "first_name":userdata.first_name,
+            "last_name":userdata.last_name,
+            "email":userdata.email,
+            "image":userdata.image.url if userdata.image else None,
+            "phone_number":userdata.phone_number,
+            }
+        return Response({'status':'true','message':'User Profile Data','user_data':userdetail})
     
 class UserEmailVerificationView(APIView):
     def post(self,request,format=None):
