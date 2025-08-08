@@ -30,17 +30,14 @@ def send_push_notification(registration_token, title, body):
     except Exception as e:
         print(f"Unexpected Error: {e}")
         
-def send_otp(email):
-        subject='OTP for Reset Password'
-        otp=random.randint(1000,9999)
-        # print(subject)
-        # print(otp)
-        message=f'Your OTP for reset password is {otp}'
+def send_resetmail(email,reset_url):
+        subject='Reset Your Password'
+        message=f"Hi {user.email},\n\nClick the link below to reset your password:\n{reset_url}\n\nIf you didn't request this, ignore this email."
         from_email=settings.EMAIL_HOST_USER
         send_mail(subject,message,from_email,[email])
         user = User.objects.filter(email=email).first()
         if user:
-            user.otp = otp
+            user.otp = 1234
             user.save()
 
 def send_acknowleadgemnet_confirm(email,refernce_number,userdata):

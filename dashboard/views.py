@@ -8,11 +8,19 @@ from .utils import *
 from django.utils import timezone
 from django.contrib import messages
 from .admin import *
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpResponseRedirect
 from django.db import IntegrityError
 import io
 import os
 from django.db.models import Q
+from django.conf import settings
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.utils.encoding import force_str
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
 
 
 # Create your views here.
@@ -114,52 +122,89 @@ class EmailVerificationView(View):
     def post(self, request):
         email = request.POST.get('email')
         try:
-            user = User.objects.get(email=email,is_admin=True)
-        except User.DoesNotExist:
-            messages.error(request, 'Admin with this email does not exist!!')
-            return redirect('AdminForgetPassword')
-        send_otp(user.email)
-        request.session['reset_email'] = email
-        messages.success(request, 'OTP sent successfully! Check your email to reset the password.')
-        return redirect('VerifyOtp')
-    
-class VerifyOtpView(View):
-    def get(self,request):
-        return render(request,'dashboard/Admin/otpverification.html')
-    def post(self, request):
-        email = request.session.get('reset_email')
-        otp = request.POST.get('otp')
-        try:
-            user = User.objects.get(email=email,is_admin=True)
-        except User.DoesNotExist:
-            messages.error(request, 'Admin with this email does not exist!!')
-            return redirect('VerifyOtp')
-        if user.otp==otp:
-            messages.success(request, 'Change Password as OTP is correct')
-            return redirect('AdminForgetPassword')
-        else :
-            messages.error(request, 'OTP Not Matched!!')
-            return redirect('VerifyOtp')
+            user=User.objects.get(email=email)
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            set_password_link = request.build_absolute_uri(
+                f'/dashboard/user-set-password/{uid}/{token}/'
+            )
+            subject = "ENYONE - Set Your Password"
+            html_message = render_to_string('dashboard/ResetPassword/Send_setpassword.html', {
+                'set_password_link': set_password_link, 
+                'user':user
+            })
+            
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body="Please set your password using the link below.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[user.email],
+            )
+            email.attach_alternative(html_message, "text/html")
+            email.send()
+            messages.success(request, "Password set email sent successfully")
+        except Exception as e:
+            messages.error(request, f"Error sending email: {str(e)}")
+        messages.success(request,'Check your email to reset the password.')
+        return redirect('AdminLogin')
 
-class AdminForgetPasswordView(View):
-    def get(self, request):
-        return render(request,'dashboard/Admin/admin_forgetpassword.html')
-    def post(self, request):
-        email = request.session.get('reset_email')
-        newpassword = request.POST.get('newpassword')
-        confirmpassword = request.POST.get('confirmpassword')
+def user_send_set_password(request, id):
+    try:
+        user=User.objects.get(id=id)
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        set_password_link = request.build_absolute_uri(
+                f'/dashboard/user-set-password/{uid}/{token}/'
+            )
+        subject = "ENYONE - Set Your Password"
+        html_message = render_to_string('dashboard/ResetPassword/Send_setpassword.html', {
+                'set_password_link': set_password_link, 
+                'user':user
+            })
+            
+        email = EmailMultiAlternatives(
+                subject=subject,
+                body="Please set your password using the link below.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[user.email],
+            )
+        email.attach_alternative(html_message, "text/html")
+        email.send()
+        messages.success(request, "Password set email sent successfully")
+    except Exception as e:
+        messages.error(request, f"Error sending email: {str(e)}")
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+    
+class UserSetPasswordView(View):
+    def get(self,request,uidb64,token):
         try:
-            user = User.objects.get(email=email,is_admin=True)
-        except User.DoesNotExist:
-            messages.error(request, 'Admin with this phone number does not exist!!')
-            return redirect('AdminForgetPassword')
-        if newpassword != confirmpassword:
-            messages.error(request, 'New Password and Confirm Password must be the same.')
-            return redirect('AdminForgetPassword')
-        user.set_password(newpassword)
-        user.save()
-        messages.success(request, 'Password changed successfully!')
-        return redirect('AdminLogin') 
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None  
+        
+        if user is not None and default_token_generator.check_token(user, token):
+            return render(request,'dashboard/ResetPassword/admin_forgetpassword.html')
+        return render(request,'dashboard/ResetPassword/passwordinvalid.html')
+    def post(self,request,uidb64,token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        
+        if user is not None and default_token_generator.check_token(user, token):
+            password=request.POST.get('newpassword') 
+            confirm_password=request.POST.get('confirmpassword')
+
+            if password and confirm_password and password != confirm_password:
+                messages.error(request, f"New Password and Confirm New Password not matched !!")
+                return render(request,'dashboard/ResetPassword/admin_forgetpassword.html')
+            user.set_password(password) 
+            user.save()
+            return render(request,'dashboard/ResetPassword/passwordsucess.html')
+        return render(request,'dashboard/ResetPassword/passwordinvalid.html')
 
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class AdminDashboardView(View):
@@ -187,23 +232,62 @@ class ManageUserView(View):
     def get(self,request):
         userdata=User.objects.filter(is_admin=False, company_id__isnull=False, company_id__gt=0,is_superuser=False,is_active=True).order_by('-id')
         notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
-        return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'unreadnotificationcount':notificationcount})
+        return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'unreadnotificationcount':notificationcount,'active21':'active'})
         # return render(request,'dashboard/User/show_userlist.html',{'userdatas':userdata,'active2':'active'})
+
+@method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
+class EditUserDetailsView(View):
+    def get(self,request,id):
+        userdata=User.objects.filter(id=id).first()
+        companydata=Company.objects.filter(company_id=userdata.company_id).first()
+        return render(request,'dashboard/User/edit_user.html',{'userdata':userdata,'active21':'active','companydata':companydata})
+    def post(self,request,id):
+        try:
+            username=request.POST.get('username')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            email = request.POST.get('email')
+            image = request.FILES.get('image')
+            phone_number = request.POST.get('phone_number')
+            userdata=User.objects.filter(id=id).first()
+            userdata.username=username
+            userdata.first_name=first_name
+            userdata.last_name=last_name
+            userdata.email=email
+            userdata.phone_number=phone_number
+            if image:
+                userdata.image=image
+            userdata.save()
+            messages.success(request,'User Updated Successfully !!')
+            return redirect('ManageUserLists')
+        except IntegrityError as e:
+                if 'phone_number' in str(e):
+                    messages.error(request, "This phone number is already in use. Please use a different phone number.")
+                elif 'email' in str(e):
+                    messages.error(request, "This email is already in use. Please use a different email.")
+                else:
+                    messages.error(request, "An error occurred during the registration process. Please try again.")
+                return redirect ('ManageUserLists')
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')
 class ShowUserDetailsView(View):
     def get(self,request,id):
         userdata=User.objects.get(id=id)
         notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
-        return render(request,'dashboard/User/show_userdetails.html',{'user':userdata,'unreadnotificationcount':notificationcount})
-        # return render(request,'dashboard/User/show_userdetails.html',{'user':userdata,'active2':'active'})
+        return render(request,'dashboard/User/show_userdetails.html',{'user':userdata,'unreadnotificationcount':notificationcount,'active21':'active'})
+    
+class DeleteUserView(View):
+    def get(self,request,id):
+        userdata=User.objects.filter(id=id).delete()
+        messages.success(request,'User Deleted Successfully !!')
+        return redirect('ManageUserLists')
     
 @method_decorator(login_required(login_url='/dashboard/admin-login/'), name='dispatch')    
 class AddUserView(View):
     def get(self,request):
         company_data=Company.objects.all()
         notificationcount=Notification.objects.filter(receiver=request.user,reader=False).count()
-        return render(request,'dashboard/User/add_userdata.html',{'company_data':company_data,'unreadnotificationcount':notificationcount})
+        return render(request,'dashboard/User/add_userdata.html',{'company_data':company_data,'unreadnotificationcount':notificationcount,'active21':'active'})
     def post(self,request):
         try:
             username=request.POST.get('username')
@@ -212,9 +296,9 @@ class AddUserView(View):
             email = request.POST.get('email')
             image = request.FILES.get('image')
             phone_number = request.POST.get('phone_number')
-            password = request.POST.get('password')
             company=request.POST.get('company')
-            userdata=User.objects.create_user(username=username,first_name=first_name,last_name=last_name,email=email,image=image,phone_number=phone_number,password=password)
+            print(company,'company')
+            userdata=User.objects.create_user(username=username,first_name=first_name,last_name=last_name,email=email,image=image,phone_number=phone_number,password=None)
             userdata.image=image
             userdata.company_id=company
             userdata.save()

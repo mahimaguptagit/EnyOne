@@ -15,12 +15,20 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 import requests
 from django.db.models import Count
+from django.conf import settings
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.utils.encoding import force_str
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     return str(refresh.access_token)
 
-class UserLoginView(APIView):
+class UserLoginView(APIView):   
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -30,8 +38,22 @@ class UserLoginView(APIView):
         
         userdata = User.objects.filter(is_admin=False, email=username).first()
         if not userdata:
-            return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})                
-        if userdata.password == password:
+            return Response({'status': 'false', 'message': 'Register Email with EnyOne team !!'})   
+        user= authenticate(request=request, email=username, password=password)  
+        if user:
+            login(request, user)
+            token = get_tokens_for_user(user) 
+            userdata.phone_verify=phone_verify
+            userdata.save() 
+            return Response({
+                'status': 'true',
+                'access_token': token,
+                'message': 'LogIn Successfully',
+                'company_id':userdata.company_id,
+                "username":userdata.username,
+                })
+
+        elif userdata.password == password:
             login(request, userdata)
             token = get_tokens_for_user(userdata) 
             userdata.phone_verify=phone_verify
@@ -64,44 +86,34 @@ class UserProfileView(APIView):
             "phone_number":userdata.phone_number,
             }
         return Response({'status':'true','message':'User Profile Data','user_data':userdetail})
-    
-class UserEmailVerificationView(APIView):
-    def post(self,request,format=None):
-        email = request.data.get('email')
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({'status':'false','message':'User with this email does not exist!!'})
-        send_otp(user.email)
-        return Response({'status':'true','message':'OTP sent successfully! Check your email to reset the password.'})
-    
-class UserVerifyOtpView(APIView):
-    def post(self, request,format=None):
-        email = request.data.get('email')
-        otp = request.data.get('otp')
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-           return Response({'status':'false','message':'User Not Found'})
-        if user.otp==otp:
-            return Response({'status':'true','message':'Change Password as OTP is correct'})
-        else :
-            return  Response({'status':'false','message':'OTP Not Matched!!'})
         
 class ResetUserPasswordView(APIView):
     def post(self,request,format=None):
         email = request.data.get('email')
-        newpassword = request.data.get('newpassword')
-        confirmpassword = request.data.get('confirmpassword')
         try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({'status':'false','message':'User Not Found'})
-        if newpassword != confirmpassword:
-            return Response({'status':'false','message':'New Password and Confirm Password must be the same.'})
-        user.set_password(newpassword)
-        user.save()
-        return Response({'status':'true','message':'Password changed successfully!'})
+            user=User.objects.get(email=email)
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            set_password_link = request.build_absolute_uri(
+                f'/dashboard/user-set-password/{uid}/{token}/'
+            )
+            subject = "ENYONE - Set Your Password"
+            html_message = render_to_string('dashboard/ResetPassword/Send_setpassword.html', {
+                'set_password_link': set_password_link, 
+                'user':user
+            })
+            
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body="Please set your password using the link below.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[user.email],
+            )
+            email.attach_alternative(html_message, "text/html")
+            email.send()
+        except Exception as e:
+            return Response({'status':'false','message':'Email Not Send'})
+        return Response({'status':'true','message':'Check Email'})
 
     
 class UserRaiseTicketView(APIView):

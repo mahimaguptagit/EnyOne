@@ -19,7 +19,7 @@
                         <a href="{% url 'ManageUserLists' %}"><i class="fa fa-caret-left"></i></a>
                     </div>
                     <div class="">
-                        <h6>Add User</h6>
+                        <h6>Edit</h6>
                     </div>
                 </div>
             </div>
@@ -36,8 +36,8 @@
                                     <div class="field-set mb-0">
                                         <label for="image" class="imageee">Update Image:
                                             <div class="profile-image" id="front_images3">
-                                                {% if data.image %}
-                                                <img src="{{ user.image.url }}" alt="User Image" style="height: 100%;"
+                                                {% if userdata.image %}
+                                                <img src="{{ userdata.image.url }}" alt="User Image" style="height: 100%;"
                                                     id="front_image3">
                                                 {% else %}
                                                 <img src="{% static 'dashboard/images/icon/default.png' %}" alt="User Image" id="front_image3">
@@ -53,27 +53,20 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="field-set">
-                                        <label for="selectLg">Company</label>
-                                                <select name="company" id="company" class="form-control"
-                                                    required>
-                                                    <option value="" disabled selected>Select Company</option>
-                                                    {% for data in company_data %}
-                                                    <option value="{{data.company_id}}">{{data.company_name}}</option>
-                                                    {% endfor %}
-                                                </select>
+                                        <label for="companyname">Company</label>
+                                        <input type="text" id="companyname" name="companyname" placeholder="Enter Username" value="{{companydata.company_name}}" class="form-control" readonly>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="field-set">
                                         <label for="username">User Name:</label>
-                                        <input type="text" id="username" name="username" placeholder="Enter Username"
-                                            class="form-control" required>
+                                        <input type="text" id="username" name="username" placeholder="Enter Username" value="{{userdata.username}}" class="form-control" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="field-set">
                                         <label for="email">Email:</label>
-                                        <input type="email" id="email" name="email" placeholder="Enter Email"
+                                        <input type="email" id="email" name="email" placeholder="Enter Email" value="{{userdata.email}}"
                                             class="form-control" required
                                             pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$">
                                     </div>
@@ -82,21 +75,20 @@
                                     <div class="field-set">
                                         <label for="first_name">First Name:</label>
                                         <input type="text" id="first_name" name="first_name"
-                                            placeholder="Enter First Name" class="form-control" required>
+                                            placeholder="Enter First Name" class="form-control"  value="{{userdata.first_name}}" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="field-set">
                                         <label for="last_name">Last Name:</label>
-                                        <input type="text" id="last_name" name="last_name" placeholder="Enter Last Name"
-                                            class="form-control" required>
+                                        <input type="text" id="last_name" name="last_name" placeholder="Enter Last Name" value="{{userdata.last_name}}" class="form-control" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="field-set">
                                         <label for="phone_number">Phone Number:</label>
                                         <input type="text" id="phone_number" name="phone_number"
-                                            placeholder="Enter Phone Number" class="form-control" pattern="^\+?[0-9]*$"
+                                            placeholder="Enter Phone Number" value="{{userdata.phone_number}}"class="form-control" pattern="^\+?[0-9]*$"
                                             required>
                                     </div>
                                 </div>
